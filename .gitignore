@@ -3,6 +3,7 @@
 
 # Object files
 *.o
+obj/
 *.ko
 *.obj
 *.elf
@@ -12,23 +13,15 @@
 *.map
 *.exp
 
-# Precompiled Headers
-*.gch
-*.pch
-
 # Libraries
+lib/
 *.lib
 *.a
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
 # Executables
+dungeon_cards_clone
 *.exe
 *.out
 *.app
@@ -42,11 +35,13 @@
 *.idb
 *.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Build directories
+build/
+bin/
