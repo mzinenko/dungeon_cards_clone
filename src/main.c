@@ -65,9 +65,18 @@ int main() {
     GameContext gameContext;
     initGameContext(&gameContext);
 
+    CardAnimation cardAnim;
+    initCardAnimation(&cardAnim);
+    
+    Uint32 lastFrameTime = SDL_GetTicks();
+
     int running = 1;
     SDL_Event event;
     while (running) {
+        Uint32 currentFrameTime = SDL_GetTicks();
+        float deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f;
+        lastFrameTime = currentFrameTime;
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = 0;
@@ -78,9 +87,14 @@ int main() {
                     handleMenuInput(&event, &gameContext, &player, &grid);
                     break;
                     
-                case STATE_GAMEPLAY:
-                    handlePlayerInput(&player, &event, grid.rows, grid.cols);
+                case STATE_GAMEPLAY: {
+                    MoveDirection moveDir = handlePlayerInput(&player, &event, grid.rows, grid.cols);
                     interaction(&grid, &player);
+
+                    if (moveDir != MOVE_NONE) {
+                        startCardAnimation(&grid, &cardAnim, &player, moveDir);
+                        shiftCards(&grid, player.prevY, player.prevX, moveDir);
+                    }
                     
                     // Check if player died
                     if (player.isAlive == -1) {
@@ -88,12 +102,15 @@ int main() {
                         gameContext.score = player.gold; // Use gold as score
                     }
                     break;
-                    
+                }
                 case STATE_GAME_OVER:
                     handleGameOverInput(&event, &gameContext, &player, &grid);
                     break;
             }
         }
+
+        updateCardAnimation(&cardAnim, deltaTime);
+        updatePlayerAnimation(&player, deltaTime);
 
         // Clear screen
         SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
@@ -102,11 +119,11 @@ int main() {
         // Render current state
         switch (gameContext.currentState) {
             case STATE_MAIN_MENU:
-                drawMainMenu(renderer, font, &gameContext);
+                drawMainMenu(renderer, font);
                 break;
                 
             case STATE_GAMEPLAY:
-                drawGrid(renderer, &grid, &player, font);
+                drawGridWithAnimation(renderer, &grid, &cardAnim, &player, font);
                 drawPlayerStats(renderer, &player, font);
                 break;
                 
@@ -115,7 +132,7 @@ int main() {
                 drawGrid(renderer, &grid, &player, font);
                 drawPlayerStats(renderer, &player, font);
                 // Draw game over screen on top
-                drawGameOver(renderer, font, &gameContext, &grid);
+                drawGameOver(renderer, font, &gameContext);
                 break;
         }
 

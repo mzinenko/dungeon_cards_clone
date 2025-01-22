@@ -21,6 +21,17 @@ typedef struct {
     int isVisible;  // Whether card is revealed
 } Card;
 
+typedef struct {
+    float startX;
+    float startY;
+    float currentX;
+    float currentY;
+    float targetX;
+    float targetY;
+    Card card;
+    float animationProgress; // 0.0 1.0
+} AnimatedCard;
+
 // Card creation functions
 Card createEnemyCard(int attack, int defense);
 Card createWeaponCard(int attack);
