@@ -1,13 +1,4 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include "gamestate.h"
-#include "grid.h"
-#include "player.h"
-#include "card.h"
-
-#define WINDOW_WIDTH 1200
-#define WINDOW_HEIGHT 800
-#define GRID_SIZE 750  // 3x3 grid, each cell 150x150
+#include "header.h"
 
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -19,9 +10,9 @@ int main() {
         SDL_Log("TTF_Init failed: %s", TTF_GetError());
         SDL_Quit();
         return 1;
-    }
+    } 
 
-    SDL_Window *window = SDL_CreateWindow(
+    window = SDL_CreateWindow(
         "Dungeon Cards Clone",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN
@@ -34,7 +25,7 @@ int main() {
         return 1;
     }
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         SDL_Log("Failed to create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
@@ -44,7 +35,7 @@ int main() {
     }
 
     // Load font
-    TTF_Font* font = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16);
+    font = TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16);
     if (!font) {
         SDL_Log("Failed to load font: %s", TTF_GetError());
         SDL_DestroyRenderer(renderer);
@@ -54,85 +45,133 @@ int main() {
         return 1;
     }
 
-    // Initialize game state
-    Grid grid;
-    initGrid(&grid, 5, 5);
-    populateGrid(&grid);
-    
-    Player player;
-    initPlayer(&player);
+    // Load texture
+    initTextures();
+    loadTextures();
 
-    GameContext gameContext;
-    initGameContext(&gameContext);
+    initMenu();
+    initHubInterface();
+    initFactions();
 
-    CardAnimation cardAnim;
-    initCardAnimation(&cardAnim);
+    printf("heroTextures[0].texture: %p\n", (void*)heroTextures[0].texture);
+
+    createPlayer(&heroTextures[0]);
+    turn = 0;
+
+    initGrid(5, 5);
     
+    initGameContext();
+
+    initStore();
+
+    //loadFromDisk();
+
+    initCardAnimation();
+    
+    initAnimationManager();
+
     Uint32 lastFrameTime = SDL_GetTicks();
 
     int running = 1;
-    SDL_Event event;
+    event = (SDL_Event){0};
     while (running) {
         Uint32 currentFrameTime = SDL_GetTicks();
         float deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f;
         lastFrameTime = currentFrameTime;
-
+        
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = 0;
             }
 
-            switch (gameContext.currentState) {
+            if (isAnyAnimationRunning()) continue;
+
+            switch (gameContext->currentState) {
                 case STATE_MAIN_MENU:
-                    handleMenuInput(&event, &gameContext, &player, &grid);
+                    handleMenuInput();
                     break;
                     
                 case STATE_GAMEPLAY: {
-                    MoveDirection moveDir = handlePlayerInput(&player, &event, grid.rows, grid.cols);
-                    interaction(&grid, &player);
-
-                    if (moveDir != MOVE_NONE) {
-                        startCardAnimation(&grid, &cardAnim, &player, moveDir);
-                        shiftCards(&grid, player.prevY, player.prevX, moveDir);
-                    }
-                    
                     // Check if player died
-                    if (player.isAlive == -1) {
-                        gameContext.currentState = STATE_GAME_OVER;
-                        gameContext.score = player.gold; // Use gold as score
+                    if (!player->isAlive) {
+                        gameContext->currentState = STATE_GAME_OVER;
+                        gameContext->score = player->gold; // Use gold as score
                     }
+
+                    handlePlayerInput(grid->rows, grid->cols);
+                    handleQuitInput();
                     break;
                 }
+                case STATE_STORE:
+                    handleStoreInput();
+                    break;
                 case STATE_GAME_OVER:
-                    handleGameOverInput(&event, &gameContext, &player, &grid);
+                    handleGameOverInput();
+                    break;
+                case STATE_SAVE_SELECT:
+                    handleSaveSelectInput();
+                    if (fileBrowser && fileBrowser->isActive) {
+                        handleFileBrowserInput();
+                    }
+                    break;
+                case STATE_HUB:
+                    handleHubInput();  // Add this line
+                    break;
+                case STATE_FRACTION:
+                    handleFactionInput();
                     break;
             }
         }
 
-        updateCardAnimation(&cardAnim, deltaTime);
-        updatePlayerAnimation(&player, deltaTime);
+        //updateEventObserver(deltaTime);
+        updatePlayerAnimation(deltaTime);
+        updateCardAnimation(deltaTime);
+        
+        if (!player->animation.isAnimating && !cardAnim->isAnimating)
+            updateAnimations(deltaTime);
 
         // Clear screen
         SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
         SDL_RenderClear(renderer);
 
         // Render current state
-        switch (gameContext.currentState) {
+        switch (gameContext->currentState) {
             case STATE_MAIN_MENU:
-                drawMainMenu(renderer, font);
+                drawMainMenu();
                 break;
                 
             case STATE_GAMEPLAY:
-                drawGridWithAnimation(renderer, &grid, &cardAnim, &player, font);
-                drawPlayerStats(renderer, &player, font);
+                renderEventObserver();
+                drawGridWithAnimation();
+                drawPlayerStats();
+                renderProjectiles();
+                drawQuitButton();
                 break;
                 
+            case STATE_STORE:
+                drawStore();
+                break;
+
             case STATE_GAME_OVER:
                 // Draw game state in background
-                drawGrid(renderer, &grid, &player, font);
-                drawPlayerStats(renderer, &player, font);
+                drawGrid();
+                drawPlayerStats();
                 // Draw game over screen on top
-                drawGameOver(renderer, font, &gameContext);
+                drawGameOver();
+                break;
+
+            case STATE_HUB:
+                drawHubInterface();
+                break;
+            case STATE_SAVE_SELECT: {
+                drawSaveSelectUI();
+                if (fileBrowser && fileBrowser->isActive) {
+                    drawFileBrowser();
+                }
+            }
+                break;
+            case STATE_FRACTION:
+                drawFactionUI();
                 break;
         }
 
@@ -142,7 +181,11 @@ int main() {
 
     // Cleanup
     TTF_CloseFont(font);
-    destroyGrid(&grid);
+    destroyPlayer();
+    destroyGrid();
+    destroyStore();
+    cleanupFileBrowser();
+    destroyAllTextures();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
