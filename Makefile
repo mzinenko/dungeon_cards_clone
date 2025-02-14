@@ -16,6 +16,7 @@ OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
 INC_FILES = $(wildcard $(INC_DIR)/*.h)
 
 CC = clang
+<<<<<<< HEAD
 
 CFLAGS = -std=c11 $(addprefix -W, all extra error pedantic) -g \
 
@@ -31,11 +32,29 @@ MKDIR = mkdir -p
 RM = rm -rf
 
 all: $(NAME) clean
+=======
+CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic
+NAME = dungeon_cards
+HEADERS = inc
+SRC = src
+
+# SDL Configuration
+SDL_FRAMEWORKS = -F./resource/frameworks
+SDL_RPATH = -Wl,-rpath,@executable_path/resource/frameworks
+FRAMEWORKS = $(SDL_FRAMEWORKS) -framework SDL2
+EXTRA_LIBS = $(SDL_RPATH)
+
+# Get absolute path to handle relative paths correctly
+PWD = $(shell pwd)
+
+.PHONY: all clean uninstall reinstall
+>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398
 
 $(NAME): $(OBJ_FILES)
 	@$(CC) $(CFLAGS) $^ -o $@ -I $(INC_DIR) $(SDL_FLAGS) $(SDL)
 	@printf "\r\33[2K$@\t \033[32;1mcreated\033[0m\n"
 
+<<<<<<< HEAD
 $(OBJ_FILES): | $(OBJ_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES)
@@ -44,6 +63,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES)
 
 $(OBJ_DIR):
 	@$(MKDIR) $@
+=======
+$(NAME): $(wildcard $(SRC)/*.c)
+	$(CC) $(CFLAGS) -I$(HEADERS) $(FRAMEWORKS) $(wildcard $(SRC)/*.c) $(EXTRA_LIBS) -o $@
+>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398
 
 clean:
 	@$(RM) $(OBJ_DIR)
