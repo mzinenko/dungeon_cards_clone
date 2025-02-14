@@ -3,6 +3,7 @@
 // Function to initialize faction upgrades
 void initFactionUpgrades(Faction *faction)
 {
+    printf("Initializing faction upgrades...\n");
     const FactionUpgrade *sourceUpgrades =
         (faction->type == FACTION_VANGUARD) ? vanguardUpgrades : crimsonUpgrades;
 

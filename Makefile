@@ -4,7 +4,7 @@ CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic
 NAME = dungeon_cards
 
 HEADERS = inc
-SRC = src
+SDL_HEADERS = resource/frameworks/SDL2.framework/Headers
 
 FRAMEWORKS = -F./resource/frameworks \
             -framework SDL2 \
@@ -15,7 +15,7 @@ FRAMEWORKS = -F./resource/frameworks \
 all: $(NAME)
 
 $(NAME): $(wildcard $(SRC)/*.c)
-	$(CC) $(CFLAGS) -I$(HEADERS) $^ -o $@ $(FRAMEWORKS) \
+	$(CC) $(CFLAGS) -I$(HEADERS) -I$(SDL_HEADERS) $^ -o $@ $(FRAMEWORKS) \
 	-rpath @executable_path/resource/frameworks
 
 clean:

@@ -159,6 +159,8 @@ bool loadSave(const char *filename)
 
     fclose(file);
 
+    printf("\n\n%d\n\n", progress->vanguardUpgrades.upgrades[0].currentLevel);
+
     if (success)
     {
         // Sync the loaded upgrades with faction states
@@ -184,29 +186,21 @@ void syncLoadedUpgrades(void)
     // Apply saved upgrade levels
     for (int i = 0; i < progress->vanguardUpgrades.count; i++)
     {
-        for (int j = 0; j < vanguardFaction->upgradeCount; j++)
+        int upgradeId = progress->vanguardUpgrades.upgrades[i].upgradeId;
+        if (upgradeId >= 0 && upgradeId < vanguardFaction->upgradeCount)
         {
-            if (strcmp(progress->vanguardUpgrades.upgrades[i].name,
-                       vanguardFaction->upgrades[j].name) == 0)
-            {
-                vanguardFaction->upgrades[j].currentLevel =
-                    progress->vanguardUpgrades.upgrades[i].currentLevel;
-                break;
-            }
+            vanguardFaction->upgrades[upgradeId].currentLevel =
+                progress->vanguardUpgrades.upgrades[i].currentLevel;
         }
     }
 
     for (int i = 0; i < progress->crimsonUpgrades.count; i++)
     {
-        for (int j = 0; j < crimsonFaction->upgradeCount; j++)
+        int upgradeId = progress->crimsonUpgrades.upgrades[i].upgradeId;
+        if (upgradeId >= 0 && upgradeId < crimsonFaction->upgradeCount)
         {
-            if (strcmp(progress->crimsonUpgrades.upgrades[i].name,
-                       crimsonFaction->upgrades[j].name) == 0)
-            {
-                crimsonFaction->upgrades[j].currentLevel =
-                    progress->crimsonUpgrades.upgrades[i].currentLevel;
-                break;
-            }
+            crimsonFaction->upgrades[upgradeId].currentLevel =
+                progress->crimsonUpgrades.upgrades[i].currentLevel;
         }
     }
 }

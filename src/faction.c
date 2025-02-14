@@ -230,14 +230,14 @@ void handleFactionInput(void)
                 {
                     if (purchaseUpgrade(currentFaction, i))
                     {
-                        FactionUpgrade *upgrade = &currentFaction->upgrades[i];
+                        int upgradeId = i;
                         if (currentFaction->type == FACTION_VANGUARD)
                         {
                             // Check if upgrade already exists
                             int existingIndex = -1;
                             for (int i = 0; i < progress->vanguardUpgrades.count; i++)
                             {
-                                if (strcmp(progress->vanguardUpgrades.upgrades[i].name, upgrade->name) == 0)
+                                if (progress->vanguardUpgrades.upgrades[i].upgradeId == upgradeId)
                                 {
                                     existingIndex = i;
                                     break;
@@ -246,24 +246,24 @@ void handleFactionInput(void)
 
                             if (existingIndex >= 0)
                             {
-                                // Increase level of existing upgrade
                                 progress->vanguardUpgrades.upgrades[existingIndex].currentLevel++;
                             }
                             else
                             {
-                                // Add new upgrade
-                                progress->vanguardUpgrades.upgrades[progress->vanguardUpgrades.count] = *upgrade;
-                                progress->vanguardUpgrades.upgrades[progress->vanguardUpgrades.count].currentLevel = 1;
+                                SavedUpgrade newUpgrade = {
+                                    .upgradeId = upgradeId,
+                                    .currentLevel = 1};
+                                progress->vanguardUpgrades.upgrades[progress->vanguardUpgrades.count] = newUpgrade;
                                 progress->vanguardUpgrades.count++;
                             }
                         }
                         else if (currentFaction->type == FACTION_CRIMSON_PATH)
                         {
-                            // Same logic for Crimson Path
+                            // Check if upgrade already exists
                             int existingIndex = -1;
                             for (int i = 0; i < progress->crimsonUpgrades.count; i++)
                             {
-                                if (strcmp(progress->crimsonUpgrades.upgrades[i].name, upgrade->name) == 0)
+                                if (progress->crimsonUpgrades.upgrades[i].upgradeId == upgradeId)
                                 {
                                     existingIndex = i;
                                     break;
@@ -276,8 +276,10 @@ void handleFactionInput(void)
                             }
                             else
                             {
-                                progress->crimsonUpgrades.upgrades[progress->crimsonUpgrades.count] = *upgrade;
-                                progress->crimsonUpgrades.upgrades[progress->crimsonUpgrades.count].currentLevel = 1;
+                                SavedUpgrade newUpgrade = {
+                                    .upgradeId = upgradeId,
+                                    .currentLevel = 1};
+                                progress->crimsonUpgrades.upgrades[progress->crimsonUpgrades.count] = newUpgrade;
                                 progress->crimsonUpgrades.count++;
                             }
                         }

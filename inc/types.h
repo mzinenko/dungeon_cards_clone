@@ -2,200 +2,16 @@
 
 typedef struct
 {
-    const char *name;
-    const char *description;
-    int maxLevel;
-    int currentLevel;
-    int baseCost;    // Gold cost
-    int gemCosts[5]; // Array of gem costs for each rarity, index matches rarity enum
-    int requiredRank;
-    void (*applyEffect)(void);
-} FactionUpgrade;
-
-typedef struct
-{
-    const char *name;
-    const char *description;
-    bool isRepeatable;
-    int cooldown;
-    int requiredRank;
-    bool isActive;
-    bool isCompleted;
-    int runsUntilCooldown;
-    void (*checkCondition)(void);
-    void (*grantReward)(void);
-} FactionQuest;
-
-static const FactionUpgrade vanguardUpgrades[MAX_FACTION_UPGRADES] = {
-    {.name = "Grid Lockdown Protocol",
-     .description = "Enemy cards cannot spawn adjacent to you after movement",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 2000,
-     .gemCosts = {0, 0, 0, 0, 5}, // 5 Legendary
-     .requiredRank = 80,
-     .applyEffect = NULL},
-    {.name = "Tactical Retreat System",
-     .description = "Once per run, can move without triggering card interactions",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 1500,
-     .gemCosts = {0, 0, 0, 3, 0}, // 3 Epic
-     .requiredRank = 70,
-     .applyEffect = NULL},
-    {.name = "Defense Matrix",
-     .description = "When picking up a shield card, gain 1 extra armor",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 1200,
-     .gemCosts = {0, 0, 8, 0, 0}, // 8 Rare
-     .requiredRank = 50,
-     .applyEffect = NULL},
-    {.name = "Combat Analysis Protocol",
-     .description = "After defeating an enemy, gain 1 armor if your HP is below 50%",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 1000,
-     .gemCosts = {0, 10, 0, 0, 0}, // 10 Uncommon
-     .requiredRank = 40,
-     .applyEffect = NULL},
-    {.name = "Combat Training",
-     .description = "+1 melee damage",
-     .maxLevel = 5,
-     .currentLevel = 0,
-     .baseCost = 200,
-     .gemCosts = {3, 0, 0, 0, 0}, // 3 Common
-     .requiredRank = 10,
-     .applyEffect = NULL},
-    {.name = "Ballistic Expertise",
-     .description = "+1 ranged damage",
-     .maxLevel = 3,
-     .currentLevel = 0,
-     .baseCost = 400,
-     .gemCosts = {0, 4, 0, 0, 0}, // 4 Uncommon
-     .requiredRank = 20,
-     .applyEffect = NULL},
-    {.name = "Tactical Gear",
-     .description = "+1 maximum armor",
-     .maxLevel = 3,
-     .currentLevel = 0,
-     .baseCost = 300,
-     .gemCosts = {0, 0, 3, 0, 0}, // 3 Rare
-     .requiredRank = 15,
-     .applyEffect = NULL},
-    {.name = "Field Medic",
-     .description = "+2 maximum HP",
-     .maxLevel = 2,
-     .currentLevel = 0,
-     .baseCost = 500,
-     .gemCosts = {0, 0, 0, 5, 0}, // 5 Epic
-     .requiredRank = 25,
-     .applyEffect = NULL},
-    {.name = "Extended Mag",
-     .description = "+1 starting ammo",
-     .maxLevel = 2,
-     .currentLevel = 0,
-     .baseCost = 400,
-     .gemCosts = {0, 0, 4, 0, 0}, // 4 Rare
-     .requiredRank = 30,
-     .applyEffect = NULL},
-    {.name = "Gem Resonance",
-     .description = "+5% chance to get an additional gem of the same rarity from coin cards",
-     .maxLevel = 3,
-     .currentLevel = 0,
-     .baseCost = 300,
-     .gemCosts = {5, 0, 0, 0, 0}, // 5 Common
-     .requiredRank = 20,
-     .applyEffect = NULL}};
-
-static const FactionUpgrade crimsonUpgrades[MAX_FACTION_UPGRADES] = {
-    {.name = "Blood Bond Protocol",
-     .description = "Once per run, when HP drops to 1, transform into a chaos beast for 3 turns",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 2000,
-     .gemCosts = {0, 0, 0, 0, 5}, // 5 Legendary
-     .requiredRank = 80,
-     .applyEffect = NULL},
-    {.name = "Pack Hunter's Instinct",
-     .description = "First attack against each new enemy card has +2 damage",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 1500,
-     .gemCosts = {0, 0, 0, 3, 0}, // 3 Epic
-     .requiredRank = 70,
-     .applyEffect = NULL},
-    {.name = "Predator's Reflexes",
-     .description = "15% chance to dodge enemy attacks entirely",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 1200,
-     .gemCosts = {0, 0, 8, 0, 0}, // 8 Rare
-     .requiredRank = 50,
-     .applyEffect = NULL},
-    {.name = "Blood Frenzy",
-     .description = "Each kill grants +1 damage for 3 turns (stacks up to 3 times)",
-     .maxLevel = 1,
-     .currentLevel = 0,
-     .baseCost = 1000,
-     .gemCosts = {0, 10, 0, 0, 0}, // 10 Uncommon
-     .requiredRank = 40,
-     .applyEffect = NULL},
-    {.name = "Ritual Scarification",
-     .description = "Gain +1 max HP, but start each run with -1 HP",
-     .maxLevel = 5,
-     .currentLevel = 0,
-     .baseCost = 200,
-     .gemCosts = {3, 0, 0, 0, 0}, // 3 Common
-     .requiredRank = 10,
-     .applyEffect = NULL},
-    {.name = "Chaos Infusion",
-     .description = "10% chance to apply Bleeding to enemies (2 damage per turn for 2 turns)",
-     .maxLevel = 3,
-     .currentLevel = 0,
-     .baseCost = 400,
-     .gemCosts = {0, 4, 0, 0, 0}, // 4 Uncommon
-     .requiredRank = 20,
-     .applyEffect = NULL},
-    {.name = "Primal Resonance",
-     .description = "Enemy cards suffer -1 damage after taking damage from you",
-     .maxLevel = 3,
-     .currentLevel = 0,
-     .baseCost = 300,
-     .gemCosts = {0, 0, 3, 0, 0}, // 3 Rare
-     .requiredRank = 15,
-     .applyEffect = NULL},
-    {.name = "Mutation Mastery",
-     .description = "Healing potions heal +1 HP and grant +1 damage for 2 turns",
-     .maxLevel = 2,
-     .currentLevel = 0,
-     .baseCost = 500,
-     .gemCosts = {0, 0, 0, 5, 0}, // 5 Epic
-     .requiredRank = 25,
-     .applyEffect = NULL},
-    {.name = "Bloodscent",
-     .description = "After killing an enemy, next card pickup gives +1 to its primary stat",
-     .maxLevel = 2,
-     .currentLevel = 0,
-     .baseCost = 400,
-     .gemCosts = {0, 0, 4, 0, 0}, // 4 Rare
-     .requiredRank = 30,
-     .applyEffect = NULL},
-    {.name = "Blood Tithe",
-     .description = "5% chance to gain double gems from kills",
-     .maxLevel = 3,
-     .currentLevel = 0,
-     .baseCost = 300,
-     .gemCosts = {5, 0, 0, 0, 0}, // 5 Common
-     .requiredRank = 20,
-     .applyEffect = NULL}};
-
-typedef struct
-{
     int characterSelected; // For future character selection
     int score;             // Can be based on gold collected or other metrics
     GameState currentState;
 } GameContext;
+
+typedef struct
+{
+    int upgradeId;
+    int currentLevel;
+} SavedUpgrade;
 
 typedef struct
 {
@@ -204,13 +20,13 @@ typedef struct
 
     struct
     {
-        FactionUpgrade upgrades[MAX_FACTION_UPGRADES];
+        SavedUpgrade upgrades[MAX_FACTION_UPGRADES];
         int count;
     } vanguardUpgrades;
 
     struct
     {
-        FactionUpgrade upgrades[MAX_FACTION_UPGRADES];
+        SavedUpgrade upgrades[MAX_FACTION_UPGRADES];
         int count;
     } crimsonUpgrades;
 } PlayerProgress;
@@ -595,6 +411,32 @@ extern FileBrowser *fileBrowser;
 
 typedef struct
 {
+    const char *name;
+    const char *description;
+    int maxLevel;
+    int currentLevel;
+    int baseCost;    // Gold cost
+    int gemCosts[5]; // Array of gem costs for each rarity, index matches rarity enum
+    int requiredRank;
+    void (*applyEffect)(void);
+} FactionUpgrade;
+
+typedef struct
+{
+    const char *name;
+    const char *description;
+    bool isRepeatable;
+    int cooldown;
+    int requiredRank;
+    bool isActive;
+    bool isCompleted;
+    int runsUntilCooldown;
+    void (*checkCondition)(void);
+    void (*grantReward)(void);
+} FactionQuest;
+
+typedef struct
+{
     SDL_Rect leaderArtRect;
     SDL_Rect dialogRect;
     SDL_Rect contentRect;
@@ -626,5 +468,169 @@ typedef struct
 extern Faction *vanguardFaction;
 extern Faction *crimsonFaction;
 extern Faction *currentFaction;
+
+static const FactionUpgrade vanguardUpgrades[MAX_FACTION_UPGRADES] = {
+    {.name = "Grid Lockdown Protocol",
+     .description = "Enemy cards cannot spawn adjacent to you after movement",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 2000,
+     .gemCosts = {0, 0, 0, 0, 5}, // 5 Legendary
+     .requiredRank = 80,
+     .applyEffect = NULL},
+    {.name = "Tactical Retreat System",
+     .description = "Once per run, can move without triggering card interactions",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 1500,
+     .gemCosts = {0, 0, 0, 3, 0}, // 3 Epic
+     .requiredRank = 70,
+     .applyEffect = NULL},
+    {.name = "Defense Matrix",
+     .description = "When picking up a shield card, gain 1 extra armor",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 1200,
+     .gemCosts = {0, 0, 8, 0, 0}, // 8 Rare
+     .requiredRank = 50,
+     .applyEffect = NULL},
+    {.name = "Combat Analysis Protocol",
+     .description = "After defeating an enemy, gain 1 armor if your HP is below 50%",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 1000,
+     .gemCosts = {0, 10, 0, 0, 0}, // 10 Uncommon
+     .requiredRank = 40,
+     .applyEffect = NULL},
+    {.name = "Combat Training",
+     .description = "+1 melee damage",
+     .maxLevel = 5,
+     .currentLevel = 0,
+     .baseCost = 200,
+     .gemCosts = {3, 0, 0, 0, 0}, // 3 Common
+     .requiredRank = 10,
+     .applyEffect = NULL},
+    {.name = "Ballistic Expertise",
+     .description = "+1 ranged damage",
+     .maxLevel = 3,
+     .currentLevel = 0,
+     .baseCost = 400,
+     .gemCosts = {0, 4, 0, 0, 0}, // 4 Uncommon
+     .requiredRank = 20,
+     .applyEffect = NULL},
+    {.name = "Tactical Gear",
+     .description = "+1 maximum armor",
+     .maxLevel = 3,
+     .currentLevel = 0,
+     .baseCost = 300,
+     .gemCosts = {0, 0, 3, 0, 0}, // 3 Rare
+     .requiredRank = 15,
+     .applyEffect = NULL},
+    {.name = "Field Medic",
+     .description = "+2 maximum HP",
+     .maxLevel = 2,
+     .currentLevel = 0,
+     .baseCost = 500,
+     .gemCosts = {0, 0, 0, 5, 0}, // 5 Epic
+     .requiredRank = 25,
+     .applyEffect = NULL},
+    {.name = "Extended Mag",
+     .description = "+1 starting ammo",
+     .maxLevel = 2,
+     .currentLevel = 0,
+     .baseCost = 400,
+     .gemCosts = {0, 0, 4, 0, 0}, // 4 Rare
+     .requiredRank = 30,
+     .applyEffect = NULL},
+    {.name = "Gem Resonance",
+     .description = "+5% chance to get an additional gem of the same rarity from coin cards",
+     .maxLevel = 3,
+     .currentLevel = 0,
+     .baseCost = 300,
+     .gemCosts = {5, 0, 0, 0, 0}, // 5 Common
+     .requiredRank = 20,
+     .applyEffect = NULL}};
+
+static const FactionUpgrade crimsonUpgrades[MAX_FACTION_UPGRADES] = {
+    {.name = "Blood Bond Protocol",
+     .description = "Once per run, when HP drops to 1, transform into a chaos beast for 3 turns",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 2000,
+     .gemCosts = {0, 0, 0, 0, 5}, // 5 Legendary
+     .requiredRank = 80,
+     .applyEffect = NULL},
+    {.name = "Pack Hunter's Instinct",
+     .description = "First attack against each new enemy card has +2 damage",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 1500,
+     .gemCosts = {0, 0, 0, 3, 0}, // 3 Epic
+     .requiredRank = 70,
+     .applyEffect = NULL},
+    {.name = "Predator's Reflexes",
+     .description = "15% chance to dodge enemy attacks entirely",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 1200,
+     .gemCosts = {0, 0, 8, 0, 0}, // 8 Rare
+     .requiredRank = 50,
+     .applyEffect = NULL},
+    {.name = "Blood Frenzy",
+     .description = "Each kill grants +1 damage for 3 turns (stacks up to 3 times)",
+     .maxLevel = 1,
+     .currentLevel = 0,
+     .baseCost = 1000,
+     .gemCosts = {0, 10, 0, 0, 0}, // 10 Uncommon
+     .requiredRank = 40,
+     .applyEffect = NULL},
+    {.name = "Ritual Scarification",
+     .description = "Gain +1 max HP, but start each run with -1 HP",
+     .maxLevel = 5,
+     .currentLevel = 0,
+     .baseCost = 200,
+     .gemCosts = {3, 0, 0, 0, 0}, // 3 Common
+     .requiredRank = 10,
+     .applyEffect = NULL},
+    {.name = "Chaos Infusion",
+     .description = "10% chance to apply Bleeding to enemies (2 damage per turn for 2 turns)",
+     .maxLevel = 3,
+     .currentLevel = 0,
+     .baseCost = 400,
+     .gemCosts = {0, 4, 0, 0, 0}, // 4 Uncommon
+     .requiredRank = 20,
+     .applyEffect = NULL},
+    {.name = "Primal Resonance",
+     .description = "Enemy cards suffer -1 damage after taking damage from you",
+     .maxLevel = 3,
+     .currentLevel = 0,
+     .baseCost = 300,
+     .gemCosts = {0, 0, 3, 0, 0}, // 3 Rare
+     .requiredRank = 15,
+     .applyEffect = NULL},
+    {.name = "Mutation Mastery",
+     .description = "Healing potions heal +1 HP and grant +1 damage for 2 turns",
+     .maxLevel = 2,
+     .currentLevel = 0,
+     .baseCost = 500,
+     .gemCosts = {0, 0, 0, 5, 0}, // 5 Epic
+     .requiredRank = 25,
+     .applyEffect = NULL},
+    {.name = "Bloodscent",
+     .description = "After killing an enemy, next card pickup gives +1 to its primary stat",
+     .maxLevel = 2,
+     .currentLevel = 0,
+     .baseCost = 400,
+     .gemCosts = {0, 0, 4, 0, 0}, // 4 Rare
+     .requiredRank = 30,
+     .applyEffect = NULL},
+    {.name = "Blood Tithe",
+     .description = "5% chance to gain double gems from kills",
+     .maxLevel = 3,
+     .currentLevel = 0,
+     .baseCost = 300,
+     .gemCosts = {5, 0, 0, 0, 0}, // 5 Common
+     .requiredRank = 20,
+     .applyEffect = NULL}};
 
 extern bool isDev;
