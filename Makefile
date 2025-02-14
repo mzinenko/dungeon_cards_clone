@@ -1,32 +1,22 @@
 NAME = endgame
 
 SRC_DIR = src
-
 OBJ_DIR = obj
-
 INC_DIR = inc
 
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-
-OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
-
-INC_FILES = $(wildcard $(INC_DIR)/*.h)
-
-CC = clang
-
-CFLAGS = -std=c11 $(addprefix -W, all extra error pedantic) -g \
-
-SDL_FLAGS = -rpath resource/framework \
+# Simplified SDL framework paths
+SDL = -F./resource/framework \
     -framework SDL2 \
     -framework SDL2_image \
     -framework SDL2_mixer \
     -framework SDL2_ttf
 
-SDL = -F resource/framework \
-    -I resource/framework/SDL2.framework/Headers \
-    -I resource/framework/SDL2_image.framework/Headers \
-    -I resource/framework/SDL2_mixer.framework/Headers \
-    -I resource/framework/SDL2_ttf.framework/Headers
+SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
+OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
+INC_FILES = $(wildcard $(INC_DIR)/*.h)
+
+CC = clang
+CFLAGS = -std=c11 $(addprefix -W, all extra error pedantic) -g
 
 MKDIR = mkdir -p
 RM = rm -rf
@@ -34,7 +24,7 @@ RM = rm -rf
 all: $(NAME) clean
 
 $(NAME): $(OBJ_FILES)
-	@$(CC) $(CFLAGS) $^ -o $@ -I $(INC_DIR) $(SDL_FLAGS) $(SDL)
+	@$(CC) $(CFLAGS) $^ -o $@ -I $(INC_DIR) $(SDL)
 	@printf "\r\33[2K$@\t \033[32;1mcreated\033[0m\n"
 
 $(OBJ_FILES): | $(OBJ_DIR)
