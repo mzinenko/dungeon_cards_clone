@@ -18,19 +18,20 @@ ifeq ($(UNAME_S),Darwin) # macOS
                 -framework SDL2_mixer
     RPATH = -rpath @executable_path/resource/frameworks
 else # Linux and others
-    FRAMEWORKS = -L./resource/frameworks \
+    FRAMEWORKS = -L./resource/frameworks/lib \
+                -I./resource/frameworks/include \
                 -lSDL2 \
                 -lSDL2_ttf \
                 -lSDL2_image \
-                -lSDL2_mixer \
-                -lm
-    RPATH = -Wl,-rpath,'$$ORIGIN/resource/frameworks'
+                -lSDL2_mixer
+    RPATH = -Wl,-rpath,'$$ORIGIN/resource/frameworks/lib'
+    EXTRA_LIBS = -lm
 endif
 
 all: $(NAME)
 
 $(NAME): $(wildcard $(SRC)/*.c)
-	$(CC) $(CFLAGS) -I$(HEADERS) $(wildcard $(SRC)/*.c) $(FRAMEWORKS) $(RPATH) -o $@
+	$(CC) $(CFLAGS) -I$(HEADERS) $(FRAMEWORKS) $(wildcard $(SRC)/*.c) $(RPATH) $(EXTRA_LIBS) -o $@
 
 clean:
 	rm -rf $(SRC)/*.o
