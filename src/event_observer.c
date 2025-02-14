@@ -1,7 +1,9 @@
-#include "header.h"
+#include "../inc/header.h"
 
-void renderEventObserver() {
-    if (!eventObserver || !eventObserver->texture || !eventObserver->active) return;
+void renderEventObserver(void)
+{
+    if (!eventObserver || !eventObserver->texture || !eventObserver->active)
+        return;
 
     SDL_Rect spriteClip;
     Texture *eventObserverTexture = eventObserver->texture;
@@ -9,17 +11,21 @@ void renderEventObserver() {
     static Uint32 lastFrameTime = 0;
     Uint32 currentTime = SDL_GetTicks();
 
-    if (currentTime - lastFrameTime > FRAME_DELAY) {
+    if (currentTime - lastFrameTime > FRAME_DELAY)
+    {
         eventObserverTexture->currentFrame = (eventObserverTexture->currentFrame + 1) % eventObserverTexture->frameCount;
         lastFrameTime = currentTime;
     }
 
-    if (eventObserverTexture->alignment) { // Vertical alignment
+    if (eventObserverTexture->alignment)
+    { // Vertical alignment
         spriteClip.x = eventObserverTexture->clipRect.x;
         spriteClip.y = eventObserverTexture->clipRect.y + eventObserverTexture->currentFrame * (eventObserverTexture->clipRect.h + eventObserverTexture->frameGap);
         spriteClip.w = eventObserverTexture->clipRect.w;
         spriteClip.h = eventObserverTexture->clipRect.h;
-    } else { // Horizontal alignment
+    }
+    else
+    { // Horizontal alignment
         spriteClip.x = eventObserverTexture->clipRect.x + eventObserverTexture->currentFrame * eventObserverTexture->clipRect.w;
         spriteClip.y = eventObserverTexture->clipRect.y;
         spriteClip.w = eventObserverTexture->clipRect.w;
@@ -32,32 +38,36 @@ void renderEventObserver() {
     SDL_Rect destRect = {
         eventObserver->x,
         eventObserver->y,
-        destW, destH 
-    };
+        destW, destH};
 
-    SDL_RenderCopy(renderer, eventObserverTexture->texture, &spriteClip, &destRect);  
+    SDL_RenderCopy(renderer, eventObserverTexture->texture, &spriteClip, &destRect);
 }
 
-void updateEventObserver(Animation *animation, float deltaTime) {
-    if (!eventObserver || !eventObserver->active || !animation) return;
+void updateEventObserver(Animation *animation, float deltaTime)
+{
+    if (!eventObserver || !eventObserver->active || !animation)
+        return;
 
     eventObserver->x += eventObserver->vx * deltaTime;
     eventObserver->y += eventObserver->vy * deltaTime;
 
-    if ((eventObserver->x >= eventObserver->targetX && eventObserver->vx > 0) || (eventObserver->x <= eventObserver->targetX && eventObserver->vx < 0)) {
+    if ((eventObserver->x >= eventObserver->targetX && eventObserver->vx > 0) || (eventObserver->x <= eventObserver->targetX && eventObserver->vx < 0))
+    {
         eventObserver->vx = 0;
         eventObserver->vy = 0;
         animation->isRunning = false;
     }
 }
 
-void eventTurn() {
+void eventTurn(void)
+{
     EventType eventType = randomInRange(0, 1);
 
     printf("Here in event turn\n");
 
     eventObserver = malloc(sizeof(EventObserver));
-    if (!eventObserver) {
+    if (!eventObserver)
+    {
         fprintf(stderr, "Failed to allocate memory for EventObserver\n");
         return;
     }
@@ -81,7 +91,8 @@ void eventTurn() {
 
     // Dynamically allocate memory for EventType
     EventType *eventTypePtr = malloc(sizeof(EventType));
-    if (!eventTypePtr) {
+    if (!eventTypePtr)
+    {
         fprintf(stderr, "Failed to allocate memory for EventType.\n");
         free(eventObserver); // Free the observer if allocation fails
         return;
@@ -89,7 +100,8 @@ void eventTurn() {
     *eventTypePtr = eventType;
 
     Animation *eventObserverAnimation = (Animation *)malloc(sizeof(Animation));
-    if (!eventObserverAnimation) {
+    if (!eventObserverAnimation)
+    {
         fprintf(stderr, "Failed to allocate memory for eventObserverAnimation.\n");
         free(eventTypePtr); // Free the allocated memory
         free(eventObserver);
@@ -107,7 +119,8 @@ void eventTurn() {
     addAnimation(eventObserverAnimation);
 }
 
-void triggerEvent(Animation *animation) {
+void triggerEvent(Animation *animation)
+{
     EventType eventType = *((EventType *)animation->userData);
 
     // Free the allocated memory for eventType
@@ -115,13 +128,15 @@ void triggerEvent(Animation *animation) {
     animation->userData = NULL;
 
     Animation *eventAnimation = (Animation *)malloc(sizeof(Animation));
-    if (!eventAnimation) {
+    if (!eventAnimation)
+    {
         fprintf(stderr, "Failed to allocate memory for animation.\n");
         return;
     }
 
     EventType *eventTypePtr = malloc(sizeof(EventType));
-    if (!eventTypePtr) {
+    if (!eventTypePtr)
+    {
         fprintf(stderr, "Failed to allocate memory for EventType.\n");
         free(eventObserver); // Free the observer if allocation fails
         return;
@@ -132,45 +147,54 @@ void triggerEvent(Animation *animation) {
         .updateAnimation = updateProjectiles, // Update logic for the event projectiles
         .onAnimationEnd = eventTurnResults,   // Results of the event turn after animation
         .isRunning = true,
-        .userData = eventTypePtr,           // Attach the event observer
+        .userData = eventTypePtr, // Attach the event observer
     };
 
-    switch (eventType) {
-        case EVENT_GOLDMANIA: {
-            for (int i = 0; i < grid->rows; i++) {
-                for (int j = 0; j < grid->cols; j++) {
-                    if (grid->cells[i][j].type == CARD_COIN) {
-                        float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + (j + 0.5f) * CARD_SIZE;
-                        float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + (i + 0.5f) * CARD_SIZE;
+    switch (eventType)
+    {
+    case EVENT_GOLDMANIA:
+    {
+        for (int i = 0; i < grid->rows; i++)
+        {
+            for (int j = 0; j < grid->cols; j++)
+            {
+                if (grid->cells[i][j].type == CARD_COIN)
+                {
+                    float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + (j + 0.5f) * CARD_SIZE;
+                    float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + (i + 0.5f) * CARD_SIZE;
 
-                        shootProjectile(eventObserver->targetX, eventObserver->targetY, targetX, targetY, 1000);
-                    }
+                    shootProjectile(eventObserver->targetX, eventObserver->targetY, targetX, targetY, 1000);
                 }
             }
         }
-        break;
+    }
+    break;
 
-        case EVENT_PLAGUE: {
-            for (int i = 0; i < grid->rows; i++) {
-                for (int j = 0; j < grid->cols; j++) {
-                    if (grid->cells[i][j].type == CARD_ENEMY) {
-                        float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + (j + 0.5f) * CARD_SIZE;
-                        float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + (i + 0.5f) * CARD_SIZE;
+    case EVENT_PLAGUE:
+    {
+        for (int i = 0; i < grid->rows; i++)
+        {
+            for (int j = 0; j < grid->cols; j++)
+            {
+                if (grid->cells[i][j].type == CARD_ENEMY)
+                {
+                    float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + (j + 0.5f) * CARD_SIZE;
+                    float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + (i + 0.5f) * CARD_SIZE;
 
-                        shootProjectile(eventObserver->targetX, eventObserver->targetY, targetX, targetY, 1000);
-                    }
+                    shootProjectile(eventObserver->targetX, eventObserver->targetY, targetX, targetY, 1000);
                 }
             }
-
-            float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + player->x * CARD_SIZE + CARD_SIZE / 2;
-            float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + player->y * CARD_SIZE + CARD_SIZE / 2;
-
-            shootProjectile(eventObserver->targetX, eventObserver->targetY, targetX, targetY, 1000);
         }
-        break;
 
-        default:
-            break;
+        float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + player->x * CARD_SIZE + CARD_SIZE / 2;
+        float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + player->y * CARD_SIZE + CARD_SIZE / 2;
+
+        shootProjectile(eventObserver->targetX, eventObserver->targetY, targetX, targetY, 1000);
+    }
+    break;
+
+    default:
+        break;
     }
 
     printf("projectiles length = %d event type = %d\n", projectileCount, eventType);
@@ -178,61 +202,74 @@ void triggerEvent(Animation *animation) {
     addAnimation(eventAnimation);
 }
 
-void eventTurnResults(Animation *animation) {
+void eventTurnResults(Animation *animation)
+{
     EventType eventType = *((EventType *)animation->userData);
 
-    switch (eventType) {
-        case EVENT_GOLDMANIA: {
-            for (int i = 0; i < grid->rows; i++) {
-                for (int j = 0; j < grid->cols; j++) {
-                    if (grid->cells[i][j].type == CARD_COIN) {
-                        grid->cells[i][j].value.value *= 2;
+    switch (eventType)
+    {
+    case EVENT_GOLDMANIA:
+    {
+        for (int i = 0; i < grid->rows; i++)
+        {
+            for (int j = 0; j < grid->cols; j++)
+            {
+                if (grid->cells[i][j].type == CARD_COIN)
+                {
+                    grid->cells[i][j].value.value *= 2;
+                }
+            }
+        }
+    }
+    break;
+
+    case EVENT_PLAGUE:
+    {
+        // Apply effects to the enemies
+        for (int i = 0; i < grid->rows; i++)
+        {
+            for (int j = 0; j < grid->cols; j++)
+            {
+                if (grid->cells[i][j].type == CARD_ENEMY)
+                {
+                    grid->cells[i][j].defense.hp -= 2;
+                    grid->cells[i][j].defense.maxHp -= 2;
+
+                    if (grid->cells[i][j].defense.hp <= 0)
+                    {
+                        grid->cells[i][j] = *createCard(CARD_COIN, grid->cells[i][j].rarity);
                     }
                 }
             }
         }
-        break;
 
-        case EVENT_PLAGUE: {
-            // Apply effects to the enemies
-            for (int i = 0; i < grid->rows; i++) {
-                for (int j = 0; j < grid->cols; j++) {
-                    if (grid->cells[i][j].type == CARD_ENEMY) {
-                        grid->cells[i][j].defense.hp -= 2;
-                        grid->cells[i][j].defense.maxHp -= 2;
+        // Apply effects to the player
+        player->defense.hp -= 6;
 
-                        if (grid->cells[i][j].defense.hp <= 0) {
-                            grid->cells[i][j] = *createCard(CARD_COIN, grid->cells[i][j].rarity);
-                        }
-                    }
-                }
-            }
-
-            // Apply effects to the player
-            player->defense.hp -= 6;
-
-            // Check if the player is still alive
-            if (player->defense.hp <= 0) {
-                player->isAlive = false;
-                gameContext->score = player->gold;
-                gameContext->currentState = STATE_GAME_OVER;
-            }
+        // Check if the player is still alive
+        if (player->defense.hp <= 0)
+        {
+            player->isAlive = false;
+            gameContext->score = player->gold;
+            gameContext->currentState = STATE_GAME_OVER;
         }
-        break;
+    }
+    break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     Animation *eventObserverBackAnimation = (Animation *)malloc(sizeof(Animation));
-    if (!eventObserverBackAnimation) {
+    if (!eventObserverBackAnimation)
+    {
         fprintf(stderr, "Failed to allocate memory for eventObserverBackAnimation.\n");
         return;
     }
 
     eventObserver->targetX = eventObserver->x - eventObserver->texture->clipRect.w;
     eventObserver->vx = -100.0f;
-    
+
     *eventObserverBackAnimation = (Animation){
         .updateAnimation = updateEventObserver,
         .onAnimationEnd = freeObserver,
@@ -243,8 +280,10 @@ void eventTurnResults(Animation *animation) {
     addAnimation(eventObserverBackAnimation);
 }
 
-void freeObserver(Animation *animation) {
-    if (!animation) return;
+void freeObserver(Animation *animation)
+{
+    if (!animation)
+        return;
 
     free(eventObserver);
     eventObserver = NULL;

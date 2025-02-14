@@ -1,4 +1,4 @@
-#include "header.h"
+#include "../inc/header.h"
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -53,3 +53,5 @@ FileBrowser *fileBrowser = NULL;
 Faction *vanguardFaction = NULL;
 Faction *crimsonFaction = NULL;
 Faction *currentFaction = NULL;
+
+bool isDev = false;
