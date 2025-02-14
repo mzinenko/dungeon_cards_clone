@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2_image/SDL_image.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
 
@@ -30,7 +30,7 @@
 #define SAVE_VERSION 3
 
 // #define M_PI 3.14159265358979323846
-#define DT_REG 8
+// #define DT_REG 8
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_FILES_PER_PAGE 10

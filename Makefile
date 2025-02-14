@@ -1,104 +1,59 @@
-# имя библиотеки
-NAME = endgame
+NAME = dungeon_cards
 
-# папка с исходниками
-SRC_DIR = src
-
-# папка, куда будут складываться объектные файлы
-OBJ_DIR = obj
-
-# папка с хедерами
-INC_DIR = inc
-
-SDL = -F resource/framework -I resource/framework/SDL2.framework/SDL2 -I resource/framework/SDL2_image.framework/SDL2_image
-
-# сделать список всех файлов в папке src, которые имеют расширение .с
-# формат каждой записи src/<file_name>.c
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-
-# добавить префикс obj/ к каждой записи из SRC_FILES, в который убрали
-# путь (до notdir src/<file_name>.c, после <file_name>.c) и изменить
-# расширение с .с на .о
-# результат выполнения src/<file_name>.o  --> obj/<file_name>.o
-# о всех манипуляциях с именами можно почитать тут
-# https://www.gnu.org/software/make/manual/html_node/File-Name-Functions.html
-OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
-
-# сделать список всех файлов в папке inc, которые имеют расширение .h
-# формат каждой записи inc/<file_name>.h
-INC_FILES = $(wildcard $(INC_DIR)/*.h)
-
-# компилятор для создания o-файлов
 CC = clang
+CFLAGS = -Wall -Wextra -Werror -I./inc -I./resource/framework/include
+LDFLAGS = -L./resource/framework/lib
 
-# флаги для компилятора (добабить префикс -W ко всем записям после
-# запятой)
-CFLAGS = -std=c11 $(addprefix -W, all extra error pedantic) -g \
+SRC_DIR = src
+OBJ_DIR = obj
+INC_DIR = inc
+FRAMEWORK_DIR = resource/framework
 
-SDL_FLAGS = -rpath resource/framework -framework SDL2 \
-		-framework SDL2_image \
-		-I resource/framework/SDL2_image.framework/Headers \
-		-framework SDL2_mixer \
-		-I resource/framework/SDL2_mixer.framework/Headers \
-		-framework SDL2_ttf \
-		-I resource/framework/SDL2_ttf.framework/Headers \
+# Source files
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-# архиватор для формирования библиотеки из о-файлов
-AR = ar
+# SDL2 static libraries
+SDL_LIBS = $(FRAMEWORK_DIR)/lib/libSDL2.a \
+           $(FRAMEWORK_DIR)/lib/libSDL2_image.a \
+           $(FRAMEWORK_DIR)/lib/libSDL2_ttf.a \
+           $(FRAMEWORK_DIR)/lib/libSDL2_mixer.a
 
-#флаги для архиватора
-AFLAGS = rcs
+# Linux dependencies
+LINUX_DEPS = -lm -ldl -lpthread -lrt
 
-MKDIR = mkdir -p
-RM = rm -rf
+# Check OS and set appropriate flags
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    # macOS specific flags
+    PLATFORM_FLAGS = -framework CoreVideo -framework CoreAudio \
+                    -framework AudioToolbox -framework CoreFoundation \
+                    -framework Carbon -framework ForceFeedback \
+                    -framework IOKit -framework Cocoa -framework Metal \
+                    -framework GameController
+else
+    # Linux specific flags
+    PLATFORM_FLAGS = $(LINUX_DEPS)
+endif
 
-# главная цель, при ее вызове вызывается цель libmx.a
 all: $(NAME)
 
-# цель зависит от времени создания o-файлов, т.е если находится какой-то
-# о-файл время последней модификации которого позже, чем время последней
-# модификации файла libmx.a, то будут запущены инструкции в этой цели
-# $@ - переменная, которая означает имя цели
-# $^ - переменная, которая означает все зависимости текущей цели
-# просто для красивой оригинальной записи ;)
-$(NAME): $(OBJ_FILES)
-	@$(CC) $(CFLAGS) $^ -o $@ -I $(INC_DIR) $(SDL_FLAGS) $(SDL)
-	@printf "\r\33[2K$@\t \033[32;1mcreated\033[0m\n"
+$(NAME): $(OBJ_DIR) $(OBJS)
+	$(CC) $(OBJS) $(SDL_LIBS) $(PLATFORM_FLAGS) -o $(NAME)
 
-# перед компиляцией o-файлов создаем папку obj, про пайпы в мейкафайле
-# https://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html
-$(OBJ_FILES): | $(OBJ_DIR)
-
-# сравниваем время последней модификации по одному каждого о-файла
-# с с-файлом c точно таким же именем и h-файлами. Если дата последней
-# модицикации o-файла раньше, то будет перекомпилирован только этот
-# с-файл и библиотека будет пересобрана. в случае с h-файлом будут
-# перекомпилированы все c-файлы, т.к. это изменение касается каждого
-# файла
-# $< - переменная, которая означает имя первой зависимости цели
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES)
-	@$(CC) $(CFLAGS) -c $< -o $@ -I $(INC_DIR) $(SDL)
-	@printf "\r\33[2K$(NAME)\033[33;1m\t compile \033[0m$(<:$(SRC_DIR)/%.c=%)\r"
-
-# создается папка obj
 $(OBJ_DIR):
-	@$(MKDIR) $@
+	mkdir -p $(OBJ_DIR)
 
-# удаляем папку с о-файлами
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
-	@$(RM) $(OBJ_DIR)
-	@printf "$(OBJ_DIR) in $(NAME)\t \033[31;1mdeleted\033[0m\n"
+	rm -rf $(OBJ_DIR)
 
-# полностью удаляем результат работы мейкфайла
 uninstall:
-	@$(RM) $(OBJ_DIR)
-	@$(RM) $(NAME)
-	@@printf "$(NAME)\t \033[31;1muninstalled\033[0m\n"
+	rm -rf $(OBJ_DIR)
+	rm -f $(NAME)
 
-# удаляем и заново собираем библиотеку
 reinstall: uninstall all
 
-# .PHONY - это явное указание имен целей мейкфайла, например, если
-# в папке будет файл clean и попытаться выполнить команду make clean,
-# то make попытается выполнить файл clean, а не цель clean
-.PHONY: all uninstall clean reinstall
+.PHONY: all clean uninstall reinstall deps

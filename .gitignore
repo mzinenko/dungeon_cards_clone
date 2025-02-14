@@ -38,3 +38,5 @@ dungeon_cards_clone
 # Build directories
 build/
 bin/
+
+*.sh

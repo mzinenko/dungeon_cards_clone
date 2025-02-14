@@ -7,31 +7,29 @@ int main(int argc, const char *argv[])
 
     printf("isDev: %d\n", isDev);
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-    {
-        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
-        return 1;
-    }
+    printf("Starting initialization...\n");
 
-    if (TTF_Init() == -1)
-    {
-        SDL_Log("TTF_Init failed: %s", TTF_GetError());
-        SDL_Quit();
-        return 1;
-    }
+if (SDL_Init(SDL_INIT_VIDEO) != 0)
+{
+    SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+    return 1;
+}
+printf("SDL initialized successfully\n");
 
-    window = SDL_CreateWindow(
-        "Dungeon Cards Clone",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+if (TTF_Init() == -1)
+{
+    SDL_Log("TTF_Init failed: %s", TTF_GetError());
+    SDL_Quit();
+    return 1;
+}
+printf("TTF initialized successfully\n");
 
-    if (!window)
-    {
-        SDL_Log("Failed to create window: %s", SDL_GetError());
-        TTF_Quit();
-        SDL_Quit();
-        return 1;
-    }
+window = SDL_CreateWindow(
+    "Dungeon Cards Clone",
+    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+
+printf("Window created: %p\n", (void *)window);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
