@@ -1,10 +1,6 @@
 /*
   Simple DirectMedia Layer
-<<<<<<<< HEAD:resource/framework/SDL2.framework/Versions/A/Headers/SDL_opengles2.h
   Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
-========
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/src/sensor/SDL_sensor_c.h
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,30 +19,34 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_sensor_c_h_
-#define SDL_sensor_c_h_
-
+/**
+ *  \file SDL_opengles2.h
+ *
+ *  This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
+ */
 #include "SDL_config.h"
 
-<<<<<<<< HEAD:resource/framework/SDL2.framework/Versions/A/Headers/SDL_opengles2.h
 #ifndef _MSC_VER
-========
-struct _SDL_SensorDriver;
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/src/sensor/SDL_sensor_c.h
 
-/* Useful functions and variables from SDL_sensor.c */
-#include "SDL_sensor.h"
+#ifdef __IPHONEOS__
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#else
+#include <GLES2/gl2platform.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#endif
 
-/* Function to get the next available sensor instance ID */
-extern SDL_SensorID SDL_GetNextSensorInstanceID(void);
+#else /* _MSC_VER */
 
-/* Initialization and shutdown functions */
-extern int SDL_SensorInit(void);
-extern void SDL_SensorQuit(void);
+/* OpenGL ES2 headers for Visual Studio */
+#include "SDL_opengles2_khrplatform.h"
+#include "SDL_opengles2_gl2platform.h"
+#include "SDL_opengles2_gl2.h"
+#include "SDL_opengles2_gl2ext.h"
 
-/* Internal event queueing functions */
-extern int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values);
+#endif /* _MSC_VER */
 
-#endif /* SDL_sensor_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#ifndef APIENTRY
+#define APIENTRY GL_APIENTRY
+#endif

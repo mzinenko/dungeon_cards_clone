@@ -4,19 +4,8 @@
 # stolen back from Frank Belew
 # stolen from Manish Singh
 # Shamelessly stolen from Owen Taylor
-<<<<<<<< HEAD:resource/framework/SDL2_gfx.framework/acinclude/sdl2.m4
 
 # serial 1
-========
-#
-# Changelog:
-# * also look for SDL2.framework under Mac OS X
-# * removed HP/UX 9 support.
-# * updated for newer autoconf.
-# * (v3) use $PKG_CONFIG for pkg-config cross-compiling support
-
-# serial 3
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/sdl2.m4
 
 dnl AM_PATH_SDL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for SDL, and define SDL_CFLAGS and SDL_LIBS
@@ -56,11 +45,7 @@ AC_ARG_ENABLE(sdltest, [  --disable-sdltest       Do not try to compile and run 
 
   if test "x$sdl_pc" = xyes ; then
     no_sdl=""
-<<<<<<<< HEAD:resource/framework/SDL2_gfx.framework/acinclude/sdl2.m4
     SDL_CONFIG="pkg-config sdl2"
-========
-    SDL2_CONFIG="$PKG_CONFIG sdl2"
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/sdl2.m4
   else
     as_save_PATH="$PATH"
     if test "x$prefix" != xNONE && test "$cross_compiling" != yes; then

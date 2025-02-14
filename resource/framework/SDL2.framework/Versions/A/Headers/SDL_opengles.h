@@ -1,10 +1,6 @@
 /*
   Simple DirectMedia Layer
-<<<<<<<< HEAD:resource/framework/SDL2.framework/Versions/A/Headers/SDL_opengles.h
   Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
-========
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/src/locale/SDL_syslocale.h
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,20 +18,22 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+/**
+ *  \file SDL_opengles.h
+ *
+ *  This is a simple file to encapsulate the OpenGL ES 1.X API headers.
+ */
 #include "SDL_config.h"
 
-/* This is the system specific header for the SDL locale API */
-
-#include "SDL_locale.h"
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef __IPHONEOS__
+#include <OpenGLES/ES1/gl.h>
+#include <OpenGLES/ES1/glext.h>
+#else
+#include <GLES/gl.h>
+#include <GLES/glext.h>
 #endif
 
-extern void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
-
-#ifdef __cplusplus
-}
+#ifndef APIENTRY
+#define APIENTRY
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

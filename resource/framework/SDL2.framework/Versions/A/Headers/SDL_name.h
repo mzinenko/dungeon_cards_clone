@@ -1,10 +1,6 @@
 /*
   Simple DirectMedia Layer
-<<<<<<<< HEAD:resource/framework/SDL2.framework/Versions/A/Headers/SDL_name.h
   Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
-========
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/include/SDL_name.h
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages

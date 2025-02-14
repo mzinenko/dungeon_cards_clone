@@ -1,10 +1,6 @@
 /*
   Simple DirectMedia Layer
-<<<<<<<< HEAD:resource/framework/SDL2.framework/Versions/A/Headers/SDL_types.h
   Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
-========
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/src/core/openbsd/SDL_wscons.h
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-void SDL_WSCONS_Init();
-void SDL_WSCONS_Quit();
+/**
+ *  \file SDL_types.h
+ *
+ *  \deprecated
+ */
 
-void SDL_WSCONS_PumpEvents();
+/* DEPRECATED */
+#include "SDL_stdinc.h"

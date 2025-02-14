@@ -1,10 +1,6 @@
 /*
   Simple DirectMedia Layer
-<<<<<<<< HEAD:resource/framework/SDL2.framework/Versions/A/Headers/begin_code.h
   Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
-========
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
->>>>>>>> d7aea5bdb5e8756226dc5230a6a2ba0e01149398:resource/framework/temp/SDL2-2.30.0/include/begin_code.h
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,8 +36,6 @@
 #ifndef SDL_DEPRECATED
 #  if (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */
 #    define SDL_DEPRECATED __attribute__((deprecated))
-#  elif defined(_MSC_VER)
-#    define SDL_DEPRECATED __declspec(deprecated)
 #  else
 #    define SDL_DEPRECATED
 #  endif
