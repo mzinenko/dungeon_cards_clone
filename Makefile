@@ -1,32 +1,19 @@
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic
-
 NAME = dungeon_cards
-
 HEADERS = inc
 SRC = src
 
-# Get absolute path
-ROOT_DIR := $(shell pwd)
+# SDL Configuration
+SDL_FRAMEWORKS = -F./resource/frameworks
+SDL_RPATH = -Wl,-rpath,@executable_path/resource/frameworks
+FRAMEWORKS = $(SDL_FRAMEWORKS) -framework SDL2
+EXTRA_LIBS = $(SDL_RPATH)
 
-# OS-specific settings
-ifeq ($(shell uname -s),Darwin) # macOS
-    FRAMEWORKS = -F./resource/frameworks \
-                -framework SDL2 \
-                -framework SDL2_ttf \
-                -framework SDL2_image \
-                -framework SDL2_mixer
-    RPATH = -rpath @executable_path/resource/frameworks
-else # Linux and others
-    FRAMEWORKS = -L$(ROOT_DIR)/resource/frameworks/lib \
-                -I$(ROOT_DIR)/resource/frameworks/include \
-                -Wl,-rpath,'$$ORIGIN/resource/frameworks/lib' \
-                -lSDL2 \
-                -lSDL2_ttf \
-                -lSDL2_image \
-                -lSDL2_mixer
-    EXTRA_LIBS = -lm -ldl -lpthread
-endif
+# Get absolute path to handle relative paths correctly
+PWD = $(shell pwd)
+
+.PHONY: all clean uninstall reinstall
 
 all: $(NAME)
 
