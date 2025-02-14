@@ -6,11 +6,11 @@ NAME = dungeon_cards
 HEADERS = inc
 SRC = src
 
-# Get absolute path to project root
+# Get absolute path
 ROOT_DIR := $(shell pwd)
 
 # OS-specific settings
-ifeq ($(UNAME_S),Darwin) # macOS
+ifeq ($(shell uname -s),Darwin) # macOS
     FRAMEWORKS = -F./resource/frameworks \
                 -framework SDL2 \
                 -framework SDL2_ttf \
@@ -20,12 +20,12 @@ ifeq ($(UNAME_S),Darwin) # macOS
 else # Linux and others
     FRAMEWORKS = -L$(ROOT_DIR)/resource/frameworks/lib \
                 -I$(ROOT_DIR)/resource/frameworks/include \
-                -Wl,-rpath,$(ROOT_DIR)/resource/frameworks/lib \
+                -Wl,-rpath,'$$ORIGIN/resource/frameworks/lib' \
                 -lSDL2 \
                 -lSDL2_ttf \
                 -lSDL2_image \
                 -lSDL2_mixer
-    EXTRA_LIBS = -lm
+    EXTRA_LIBS = -lm -ldl -lpthread
 endif
 
 all: $(NAME)
