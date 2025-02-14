@@ -7,18 +7,22 @@ INC_DIR = inc
 # Framework paths
 FRAMEWORK_PATH = resource/framework
 
-# SDL includes using your framework structure
+# SDL includes with exact paths
 SDL_INCLUDES = -I$(FRAMEWORK_PATH)/SDL2.framework/Headers \
     -I$(FRAMEWORK_PATH)/SDL2_image.framework/Headers \
     -I$(FRAMEWORK_PATH)/SDL2_mixer.framework/Headers \
     -I$(FRAMEWORK_PATH)/SDL2_ttf.framework/Headers
 
-# For Linux linking with your frameworks
+# For Linux linking with frameworks
 SDL_FLAGS = -L$(FRAMEWORK_PATH)/SDL2.framework \
     -L$(FRAMEWORK_PATH)/SDL2_image.framework \
     -L$(FRAMEWORK_PATH)/SDL2_mixer.framework \
     -L$(FRAMEWORK_PATH)/SDL2_ttf.framework \
-    -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+    -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf \
+    -Wl,-rpath,$(FRAMEWORK_PATH)/SDL2.framework \
+    -Wl,-rpath,$(FRAMEWORK_PATH)/SDL2_image.framework \
+    -Wl,-rpath,$(FRAMEWORK_PATH)/SDL2_mixer.framework \
+    -Wl,-rpath,$(FRAMEWORK_PATH)/SDL2_ttf.framework
 
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
