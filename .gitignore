@@ -13,13 +13,6 @@ obj/
 *.map
 *.exp
 
-# Libraries
-lib/
-*.lib
-*.a
-*.la
-*.lo
-
 # Executables
 dungeon_cards_clone
 *.exe
