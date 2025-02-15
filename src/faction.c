@@ -1,8 +1,6 @@
 #include "../inc/header.h"
 
-void initFactions(void)
-{
-    // Initialize Sanctum Vanguard
+void initFactions(void) {    
     vanguardFaction = malloc(sizeof(Faction));
     *vanguardFaction = (Faction){
         .type = FACTION_VANGUARD,
@@ -14,7 +12,6 @@ void initFactions(void)
         .currentDialog = NULL,
         .ui = {.contentRect = {0, 0, 0, 0}, .returnButton = {0, 0, 0, 0}, .leaderArtRect = {0, 0, 0, 0}, .dialogRect = {0, 0, 0, 0}}};
 
-    // Initialize Crimson Path
     crimsonFaction = malloc(sizeof(Faction));
     *crimsonFaction = (Faction){
         .type = FACTION_CRIMSON_PATH,
@@ -28,9 +25,6 @@ void initFactions(void)
 
     initFactionUI(vanguardFaction);
     initFactionUI(crimsonFaction);
-
-    // Load faction leader textures
-    // We'll implement this later when we have the art assets
     initFactionUpgrades(vanguardFaction);
     initFactionUpgrades(crimsonFaction);
 }
@@ -40,8 +34,8 @@ void initFactionUI(Faction* faction) {
         .leaderArtRect = {
             FACTION_PADDING,
             FACTION_PADDING,
-            VIRTUAL_WIDTH * 0.3f,  // 30% of width for leader art
-            VIRTUAL_HEIGHT * 0.6f   // 60% of height for leader art
+            VIRTUAL_WIDTH * 0.3f, 
+            VIRTUAL_HEIGHT * 0.6f 
         },
         .dialogRect = {
             FACTION_PADDING + VIRTUAL_WIDTH * 0.075f,
@@ -69,10 +63,8 @@ void initFactionUI(Faction* faction) {
     };
 }
 
-void switchToFaction(FactionType type)
-{
-    switch (type)
-    {
+void switchToFaction(FactionType type) {
+    switch (type) {
     case FACTION_VANGUARD:
         currentFaction = vanguardFaction;
         break;
@@ -84,9 +76,7 @@ void switchToFaction(FactionType type)
         break;
     }
 
-    // Reset UI state when switching
-    if (currentFaction)
-    {
+    if (currentFaction) {
         currentFaction->ui.isStoreTab = true;
         updateFactionDialog();
     }
@@ -96,18 +86,15 @@ void drawFactionUI(void) {
     if (!currentFaction)
         return;
 
-    // Draw background
     SDL_Rect backgroundRect = {0, 15, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
     SDL_RenderCopy(renderer, uiTextures[5 + currentFaction->type].texture, &uiTextures[5 + currentFaction->type].clipRect, &backgroundRect);
 
-    // Draw faction name and rank
     SDL_Color textColor = {255, 255, 255, 255};
     char rankText[64];
     snprintf(rankText, sizeof(rankText), "%s - Standing: %d",
              currentFaction->name, currentFaction->playerRank);
     renderText(rankText, FACTION_PADDING * 2 + (FACTION_TAB_WIDTH + FACTION_PADDING) * 2 + 0.35f * VIRTUAL_WIDTH, FACTION_PADDING + FACTION_TAB_HEIGHT / 4, textColor);
 
-    // Draw tabs
     SDL_Rect storeTab = {
         currentFaction->ui.contentRect.x,
         FACTION_PADDING,
@@ -124,14 +111,12 @@ void drawFactionUI(void) {
     drawButton("Store", storeTab, currentFaction->ui.isStoreTab);
     drawButton("Quests", questTab, !currentFaction->ui.isStoreTab);
 
-    // Draw current content
     if (currentFaction->ui.isStoreTab) {
         drawFactionStore();
     } else {
         drawFactionQuests();
     }
 
-    // Draw dialog text
     if (currentFaction->currentDialog) {
         renderText(currentFaction->currentDialog,
             currentFaction->ui.dialogRect.x + FACTION_PADDING,
@@ -140,17 +125,14 @@ void drawFactionUI(void) {
         );
     }
 
-    // Draw return button
     drawButton("Return", currentFaction->ui.returnButton, 
         currentFaction->ui.returnHovered);
 }
 
-// Separate store drawing function for better organization
 void drawFactionStore(void) {
     SDL_Color textColor = {255, 255, 255, 255};
     SDL_Color lockedColor = {128, 128, 128, 255};
 
-    // Create content clip area
     SDL_Rect clipRect = currentFaction->ui.contentRect;
     SDL_RenderSetClipRect(renderer, &clipRect);
 
@@ -163,13 +145,11 @@ void drawFactionStore(void) {
     if (currentFaction->ui.maxScrollOffset < 0) 
         currentFaction->ui.maxScrollOffset = 0;
 
-    // Keep scroll in bounds
     if (currentFaction->ui.scrollOffset > currentFaction->ui.maxScrollOffset)
         currentFaction->ui.scrollOffset = currentFaction->ui.maxScrollOffset;
     if (currentFaction->ui.scrollOffset < 0)
         currentFaction->ui.scrollOffset = 0;
 
-    // Draw upgrades
     for (int i = 0; i < currentFaction->upgradeCount; i++) {
         FactionUpgrade *upgrade = &currentFaction->upgrades[i];
         SDL_Rect upgradeRect = {
@@ -179,7 +159,6 @@ void drawFactionStore(void) {
             FACTION_ITEM_HEIGHT
         };
 
-        // Only draw if visible
         if (upgradeRect.y + upgradeRect.h >= currentFaction->ui.contentRect.y &&
             upgradeRect.y <= currentFaction->ui.contentRect.y + 
                 currentFaction->ui.contentRect.h) {
@@ -191,7 +170,6 @@ void drawFactionStore(void) {
                 ? &textColor
                 : &lockedColor;
 
-            // Draw upgrade info
             char levelText[128];
             snprintf(levelText, sizeof(levelText), "%s (Level %d/%d)",
                 upgrade->name, upgrade->currentLevel, upgrade->maxLevel);
@@ -207,7 +185,6 @@ void drawFactionStore(void) {
                 *color
             );
 
-            // Draw costs
             char costText[256];
             int goldCost = upgrade->baseCost * (upgrade->currentLevel + 1);
             char gemCosts[128] = "";
@@ -226,7 +203,6 @@ void drawFactionStore(void) {
                 }
             }
 
-            // Draw costs text
             snprintf(costText, sizeof(costText), "Cost: %d gold%s%s",
                 goldCost,
                 strlen(gemCosts) > 0 ? " + " : "",
@@ -238,7 +214,6 @@ void drawFactionStore(void) {
                 *color
             );
 
-            // Draw rank requirement
             char rankText[64];
             snprintf(rankText, sizeof(rankText), "Requires Standing %d",
                 upgrade->requiredRank);
@@ -248,7 +223,6 @@ void drawFactionStore(void) {
                 *color
             );
 
-            // Draw buy button if available
             if (currentFaction->playerRank >= upgrade->requiredRank &&
                 upgrade->currentLevel < upgrade->maxLevel) {
 
@@ -274,7 +248,6 @@ void drawFactionStore(void) {
 
     SDL_RenderSetClipRect(renderer, NULL);
 
-    // Draw scrollbar if needed
     if (currentFaction->ui.maxScrollOffset > 0) {
         int scrollbarHeight = currentFaction->ui.contentRect.h * 
             (currentFaction->ui.contentRect.h / 
@@ -306,11 +279,9 @@ void handleFactionInput(void) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
     
-    // Convert window coordinates to virtual coordinates
     int virtualMouseX, virtualMouseY;
     windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
-    // Check tab clicks
     SDL_Rect storeTab = {
         currentFaction->ui.contentRect.x,
         FACTION_PADDING,
@@ -344,18 +315,16 @@ void handleFactionInput(void) {
         }
     }
 
-    // Handle scroll wheel
+    
     if (event.type == SDL_MOUSEWHEEL) {
-        if (currentFaction && currentFaction->ui.isStoreTab) {
-            // Only scroll if mouse is over content area
+        if (currentFaction && currentFaction->ui.isStoreTab) { 
             if (virtualMouseX >= currentFaction->ui.contentRect.x &&
                 virtualMouseX <= currentFaction->ui.contentRect.x + currentFaction->ui.contentRect.w &&
                 virtualMouseY >= currentFaction->ui.contentRect.y &&
                 virtualMouseY <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h) {
 
                 currentFaction->ui.scrollOffset -= event.wheel.y * 8;
-
-                // Keep scroll offset in bounds
+                
                 if (currentFaction->ui.scrollOffset < 0) {
                     currentFaction->ui.scrollOffset = 0;
                 }
@@ -365,8 +334,7 @@ void handleFactionInput(void) {
             }
         }
     }
-
-    // Handle upgrade purchases
+    
     if (event.type == SDL_MOUSEBUTTONDOWN && currentFaction->ui.isStoreTab) {
         int startY = currentFaction->ui.contentRect.y - currentFaction->ui.scrollOffset;
 
@@ -377,8 +345,7 @@ void handleFactionInput(void) {
                 currentFaction->ui.contentRect.w - FACTION_PADDING * 2,
                 FACTION_ITEM_HEIGHT
             };
-
-            // Only check if upgrade is visible
+            
             if (upgradeRect.y + upgradeRect.h >= currentFaction->ui.contentRect.y &&
                 upgradeRect.y <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h) {
 
@@ -400,8 +367,7 @@ void handleFactionInput(void) {
 
 void handleUpgradePurchase(Faction* faction, int upgradeIndex) {
     if (purchaseUpgrade(faction, upgradeIndex)) {
-        if (faction->type == FACTION_VANGUARD) {
-            // Check if upgrade already exists
+        if (faction->type == FACTION_VANGUARD) {            
             int existingIndex = -1;
             for (int i = 0; i < progress->vanguardUpgrades.count; i++) {
                 if (progress->vanguardUpgrades.upgrades[i].upgradeId == upgradeIndex) {
@@ -420,8 +386,7 @@ void handleUpgradePurchase(Faction* faction, int upgradeIndex) {
                 progress->vanguardUpgrades.upgrades[progress->vanguardUpgrades.count] = newUpgrade;
                 progress->vanguardUpgrades.count++;
             }
-        } else if (faction->type == FACTION_CRIMSON_PATH) {
-            // Check if upgrade already exists
+        } else if (faction->type == FACTION_CRIMSON_PATH) {            
             int existingIndex = -1;
             for (int i = 0; i < progress->crimsonUpgrades.count; i++) {
                 if (progress->crimsonUpgrades.upgrades[i].upgradeId == upgradeIndex) {
@@ -445,9 +410,7 @@ void handleUpgradePurchase(Faction* faction, int upgradeIndex) {
     }
 }
 
-void drawFactionQuests(void)
-{
-    // Placeholder for quest UI
+void drawFactionQuests(void) {
     SDL_Color textColor = {255, 255, 255, 255};
     renderText("Quests Coming Soon",
                currentFaction->ui.contentRect.x + 20,
@@ -455,20 +418,15 @@ void drawFactionQuests(void)
                textColor);
 }
 
-void updateFactionDialog(void)
-{
-    // We'll implement proper dialog system later
+void updateFactionDialog(void) {    
     if (!currentFaction)
         return;
 
-    if (currentFaction->ui.dialogState == DIALOG_FIRST_ENCOUNTER)
-    {
-        if (currentFaction->type == FACTION_VANGUARD)
-        {
+    if (currentFaction->ui.dialogState == DIALOG_FIRST_ENCOUNTER) {
+        if (currentFaction->type == FACTION_VANGUARD) {
             currentFaction->currentDialog = "Hold. Providence Keep security checkpoint. I am Lord Sentinel Aldrich Vale.";
         }
-        else
-        {
+        else {
             currentFaction->currentDialog = "Fresh blood walks into our den. I am Ravenna, Beast Queen of the Crimson Path.";
         }
     }

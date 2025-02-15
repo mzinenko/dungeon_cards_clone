@@ -30,7 +30,6 @@ void renderProjectiles(void) {
             lastFrameTime = currentTime;
         }
 
-        // Calculate frame clip
         if (projectileTexture->alignment) {
             spriteClip.x = projectileTexture->clipRect.x;
             spriteClip.y = projectileTexture->clipRect.y + 
@@ -47,7 +46,6 @@ void renderProjectiles(void) {
             spriteClip.h = projectileTexture->clipRect.h;
         }
 
-        // Scale to virtual resolution
         float destW = PROJECTILE_VIRTUAL_WIDTH;
         float destH = PROJECTILE_VIRTUAL_HEIGHT;
         
@@ -70,71 +68,54 @@ void renderProjectiles(void) {
     }
 }
 
-void updateProjectiles(Animation *animation, float deltaTime)
-{
-    if (projectileCount == 0)
-    {
+void updateProjectiles(Animation *animation, float deltaTime) {
+    if (projectileCount == 0) {
         animation->isRunning = false;
         return;
     }
 
-    for (int i = 0; i < projectileCount; i++)
-    {
+    for (int i = 0; i < projectileCount; i++) {
         if (!projectiles[i].active)
             continue;
 
-        // Update elapsed time
         projectiles[i].elapsedTime += deltaTime;
 
-        // Calculate progress (from 0 to 1)
         float progress = projectiles[i].elapsedTime / projectiles[i].duration;
         if (progress >= 1.0f)
             progress = 1.0f;
 
-        // Smooth easing function: ease-in-out cubic
-        // Adjust the progress value to smooth the movement
-        if (progress < 0.5f)
-        {
-            progress = 4.0f * progress * progress * progress; // Accelerate
+        if (progress < 0.5f) {
+            progress = 4.0f * progress * progress * progress;
         }
-        else
-        {
+        else {
             float t = (progress - 1.0f);
-            progress = 1.0f + 4.0f * t * t * t; // Decelerate
+            progress = 1.0f + 4.0f * t * t * t;
         }
 
-        // Interpolate position with the smoothed progress
         projectiles[i].x = projectiles[i].targetX * progress + (1.0f - progress) * (projectiles[i].x - projectiles[i].vx * deltaTime);
         projectiles[i].y = projectiles[i].targetY * progress + (1.0f - progress) * (projectiles[i].y - projectiles[i].vy * deltaTime);
 
-        // Deactivate the projectile if it has reached its duration
-        if (progress >= 1.0f)
-        {
+        if (progress >= 1.0f) {
             projectiles[i].active = false;
 
-            // Remove the projectile from the array
-            for (int j = i; j < projectileCount - 1; j++)
-            {
+            for (int j = i; j < projectileCount - 1; j++) {
                 projectiles[j] = projectiles[j + 1];
             }
 
             projectileCount--;
-            if (projectileCount > 0)
-            {
+            if (projectileCount > 0) {
                 Projectile *temp = realloc(projectiles, projectileCount * sizeof(Projectile));
-                if (temp == NULL)
-                {
+                if (temp == NULL) {
                     fprintf(stderr, "Failed to allocate memory after removing projectile\n");
                     return;
                 }
                 projectiles = temp;
             }
-            else
-            {
+            else {
                 free(projectiles);
                 projectiles = NULL;
             }
-            i--; // Adjust index after removal
+            i--;
         }
     }
 }
@@ -157,7 +138,6 @@ void shootProjectile(float startX, float startY, float targetX, float targetY,
     float durationSeconds = durationMs / 1000.0f;
     float speed = distance / durationSeconds;
 
-    // Calculate velocities in virtual coordinates
     newProjectile->vx = (dx / distance) * speed;
     newProjectile->vy = (dy / distance) * speed;
     newProjectile->x = startX;

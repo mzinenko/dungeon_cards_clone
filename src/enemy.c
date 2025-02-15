@@ -105,26 +105,18 @@ void enemyInteractionResults(Animation *animation) {
 
     int totalDamage = weaponDamage;
 
-
     if (((float)rand() / (float)RAND_MAX) < player->attack.critChance) {
         totalDamage *= 2;
-    }
-
-    // Reduce enemy armor first
+    }    
     enemyCard->defense.armor -= totalDamage;
 
-    if (enemyCard->defense.armor < 0)
-    {
-        // Excess damage goes to HP
+    if (enemyCard->defense.armor < 0) {
         enemyCard->defense.hp += enemyCard->defense.armor;
         enemyCard->defense.armor = 0;
     }
 
-    // Check if enemy is dead
-    if (enemyCard->defense.hp <= 0)
-    {
+    if (enemyCard->defense.hp <= 0) {
         int posX = enemyCard->animation.x, posY = enemyCard->animation.y;
-        // Destroy enemy card and shift grid
         enemyCard = createCard(CARD_COIN, enemyCard->rarity);
         grid->cells[posY][posX] = *enemyCard;
         grid->cells[posY][posX].animation.x = posX;

@@ -1,21 +1,16 @@
 #include "../inc/header.h"
 
-// Calculate a simple checksum
-static uint32_t calculateChecksum(const PlayerProgress *data)
-{
+static uint32_t calculateChecksum(const PlayerProgress *data) {
     uint32_t checksum = 0;
     const uint8_t *bytes = (const uint8_t *)data;
-    for (size_t i = 0; i < sizeof(PlayerProgress); i++)
-    {
-        checksum = (checksum << 1) | (checksum >> 31); // Rotate left
+    for (size_t i = 0; i < sizeof(PlayerProgress); i++) {
+        checksum = (checksum << 1) | (checksum >> 31); 
         checksum ^= bytes[i];
     }
     return checksum;
 }
 
-// Create saves directory if it doesn't exist
-static void ensureSaveDirectory(void)
-{
+static void ensureSaveDirectory(void) {
 #ifdef _WIN32
     _mkdir(SAVE_DIR);
 #else
@@ -23,8 +18,7 @@ static void ensureSaveDirectory(void)
 #endif
 }
 
-static bool validateSaveFile(const char *filename)
-{
+static bool validateSaveFile(const char *filename) {
     FILE *file = fopen(filename, "rb");
     if (!file)
         return false;
@@ -38,21 +32,17 @@ static bool validateSaveFile(const char *filename)
     if (header.magicNumber != SAVE_FILE_MAGIC)
         return false;
     if (header.version != 1 && header.version != SAVE_VERSION)
-        return false; // Accept both versions
+        return false; 
 
-    // Only check checksum for current version
-    if (header.version == SAVE_VERSION)
-    {
+    if (header.version == SAVE_VERSION) {
         uint32_t checksum = calculateChecksum(&header.data);
         return checksum == header.checksum;
     }
 
-    return true; // Accept old version without checksum validation
+    return true;
 }
 
-// Scan for save files
-void scanSaveFiles(void)
-{
+void scanSaveFiles(void) {
     printf("Scanning for save files...\n");
     ensureSaveDirectory();
     numSaveFiles = 0;
@@ -62,30 +52,23 @@ void scanSaveFiles(void)
         return;
 
     struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL && numSaveFiles < MAX_SAVE_FILES)
-    {
-        if (entry->d_type == DT_REG)
-        { // Regular file
+    while ((entry = readdir(dir)) != NULL && numSaveFiles < MAX_SAVE_FILES) {
+        if (entry->d_type == DT_REG) { 
             char fullPath[512];
             snprintf(fullPath, sizeof(fullPath), "%s/%s", SAVE_DIR, entry->d_name);
 
             struct stat st;
-            if (stat(fullPath, &st) == 0)
-            {
+            if (stat(fullPath, &st) == 0) {
                 SaveFileInfo *info = &saveFiles[numSaveFiles];
                 strncpy(info->filename, entry->d_name, sizeof(info->filename) - 1);
                 info->lastModified = st.st_mtime;
                 info->isValid = validateSaveFile(fullPath);
 
-                if (info->isValid)
-                {
-                    // Load preview data
+                if (info->isValid) {
                     FILE *file = fopen(fullPath, "rb");
-                    if (file)
-                    {
+                    if (file) {
                         SaveFileHeader header;
-                        if (fread(&header, sizeof(header), 1, file) == 1)
-                        {
+                        if (fread(&header, sizeof(header), 1, file) == 1) {
                             info->preview = header.data;
                         }
                         fclose(file);
@@ -98,8 +81,7 @@ void scanSaveFiles(void)
     closedir(dir);
 }
 
-bool loadSave(const char *filename)
-{
+bool loadSave(const char *filename) {
     char fullPath[512];
     snprintf(fullPath, sizeof(fullPath), "%s/%s", SAVE_DIR, filename);
 
@@ -110,45 +92,31 @@ bool loadSave(const char *filename)
     SaveFileHeader header;
     bool success = false;
 
-    if (fread(&header, sizeof(header), 1, file) == 1)
-    {
-        if (header.magicNumber == SAVE_FILE_MAGIC)
-        {
-            // Handle different versions
-            if (header.version == 1)
-            {
-                // Convert version 1 to version 3 (assuming version 2 was for gems)
+    if (fread(&header, sizeof(header), 1, file) == 1) {
+        if (header.magicNumber == SAVE_FILE_MAGIC) {
+            if (header.version == 1) {
                 PlayerProgress newProgress = {
                     .totalCoins = header.data.totalCoins,
-                    // Initialize new fields for gems from version 2
                     .gems = {0},
-                    // Initialize new upgrade arrays
                     .vanguardUpgrades = {0},
                     .crimsonUpgrades = {0}};
                 progress = malloc(sizeof(PlayerProgress));
                 *progress = newProgress;
                 success = true;
             }
-            else if (header.version == 2)
-            {
-                // Convert version 2 to version 3 (keep gems but add upgrades)
+            else if (header.version == 2) {
                 PlayerProgress newProgress = {
                     .totalCoins = header.data.totalCoins,
-                    // Copy existing gems
                     .vanguardUpgrades = {0},
                     .crimsonUpgrades = {0}};
-                // Copy gems array
                 memcpy(newProgress.gems, header.data.gems, sizeof(header.data.gems));
 
                 progress = malloc(sizeof(PlayerProgress));
                 *progress = newProgress;
                 success = true;
             }
-            else if (header.version == SAVE_VERSION)
-            {
-                // Current version with all fields
-                if (calculateChecksum(&header.data) == header.checksum)
-                {
+            else if (header.version == SAVE_VERSION) {
+                if (calculateChecksum(&header.data) == header.checksum) {
                     progress = malloc(sizeof(PlayerProgress));
                     *progress = header.data;
                     success = true;
@@ -161,53 +129,39 @@ bool loadSave(const char *filename)
 
     printf("\n\n%d\n\n", progress->vanguardUpgrades.upgrades[0].currentLevel);
 
-    if (success)
-    {
-        // Sync the loaded upgrades with faction states
+    if (success) {
         syncLoadedUpgrades();
     }
 
     return success;
 }
 
-// Added function to sync upgrades with faction state
-void syncLoadedUpgrades(void)
-{
-    // Reset all upgrade levels first
-    for (int i = 0; i < vanguardFaction->upgradeCount; i++)
-    {
+void syncLoadedUpgrades(void) {
+    for (int i = 0; i < vanguardFaction->upgradeCount; i++) {
         vanguardFaction->upgrades[i].currentLevel = 0;
     }
-    for (int i = 0; i < crimsonFaction->upgradeCount; i++)
-    {
+    for (int i = 0; i < crimsonFaction->upgradeCount; i++) {
         crimsonFaction->upgrades[i].currentLevel = 0;
     }
 
-    // Apply saved upgrade levels
-    for (int i = 0; i < progress->vanguardUpgrades.count; i++)
-    {
+    for (int i = 0; i < progress->vanguardUpgrades.count; i++) {
         int upgradeId = progress->vanguardUpgrades.upgrades[i].upgradeId;
-        if (upgradeId >= 0 && upgradeId < vanguardFaction->upgradeCount)
-        {
+        if (upgradeId >= 0 && upgradeId < vanguardFaction->upgradeCount) {
             vanguardFaction->upgrades[upgradeId].currentLevel =
                 progress->vanguardUpgrades.upgrades[i].currentLevel;
         }
     }
 
-    for (int i = 0; i < progress->crimsonUpgrades.count; i++)
-    {
+    for (int i = 0; i < progress->crimsonUpgrades.count; i++) {
         int upgradeId = progress->crimsonUpgrades.upgrades[i].upgradeId;
-        if (upgradeId >= 0 && upgradeId < crimsonFaction->upgradeCount)
-        {
+        if (upgradeId >= 0 && upgradeId < crimsonFaction->upgradeCount) {
             crimsonFaction->upgrades[upgradeId].currentLevel =
                 progress->crimsonUpgrades.upgrades[i].currentLevel;
         }
     }
 }
 
-// Update createNewSave to initialize upgrade arrays
-bool createNewSave(const char *filename)
-{
+bool createNewSave(const char *filename) {
     ensureSaveDirectory();
 
     char fullPath[512];
@@ -217,14 +171,12 @@ bool createNewSave(const char *filename)
     if (!file)
         return false;
 
-    // Initialize new progress
     PlayerProgress newProgress = {
         .totalCoins = 0,
-        .gems = {0},             // Initialize gems array
-        .vanguardUpgrades = {0}, // Initialize upgrade arrays
+        .gems = {0}, 
+        .vanguardUpgrades = {0},
         .crimsonUpgrades = {0}};
 
-    // Create header with new version
     SaveFileHeader header = {
         .magicNumber = SAVE_FILE_MAGIC,
         .version = SAVE_VERSION,
@@ -235,8 +187,7 @@ bool createNewSave(const char *filename)
     bool success = fwrite(&header, sizeof(header), 1, file) == 1;
     fclose(file);
 
-    if (success)
-    {
+    if (success) {
         progress = malloc(sizeof(PlayerProgress));
         *progress = newProgress;
     }
@@ -244,9 +195,7 @@ bool createNewSave(const char *filename)
     return success;
 }
 
-// Update saveProgress function to use new version
-bool saveProgress(const char *filename)
-{
+bool saveProgress(const char *filename) {
     if (!progress)
         return false;
 
@@ -259,7 +208,7 @@ bool saveProgress(const char *filename)
 
     SaveFileHeader header = {
         .magicNumber = SAVE_FILE_MAGIC,
-        .version = SAVE_VERSION, // Use new version
+        .version = SAVE_VERSION,
         .timestamp = time(NULL),
         .data = *progress};
     header.checksum = calculateChecksum(&header.data);
@@ -273,36 +222,27 @@ bool saveProgress(const char *filename)
     return success;
 }
 
-// Get all save files
-const SaveFileInfo *getSaveFiles(int *count)
-{
+const SaveFileInfo *getSaveFiles(int *count) {
     *count = numSaveFiles;
     return saveFiles;
 }
 
-// Import an external save file
-bool importSaveFile(const char *sourcePath)
-{
-    // First validate the file
-    if (!validateSaveFile(sourcePath))
-    {
+bool importSaveFile(const char *sourcePath) {
+    if (!validateSaveFile(sourcePath)) {
         return false;
     }
 
-    // Generate a unique filename
     char filename[256];
     time_t now = time(NULL);
     strftime(filename, sizeof(filename), "imported_%Y%m%d_%H%M%S.sav", localtime(&now));
 
-    // Copy file to saves directory
     char destPath[512];
     snprintf(destPath, sizeof(destPath), "%s/%s", SAVE_DIR, filename);
 
     FILE *source = fopen(sourcePath, "rb");
     FILE *dest = fopen(destPath, "wb");
 
-    if (!source || !dest)
-    {
+    if (!source || !dest) {
         if (source)
             fclose(source);
         if (dest)
@@ -314,10 +254,8 @@ bool importSaveFile(const char *sourcePath)
     size_t bytesRead;
     bool success = true;
 
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), source)) > 0)
-    {
-        if (fwrite(buffer, 1, bytesRead, dest) != bytesRead)
-        {
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), source)) > 0) {
+        if (fwrite(buffer, 1, bytesRead, dest) != bytesRead) {
             success = false;
             break;
         }
@@ -326,17 +264,11 @@ bool importSaveFile(const char *sourcePath)
     fclose(source);
     fclose(dest);
 
-    if (success)
-    {
-        scanSaveFiles(); // Refresh save file list
+    if (success) {
+        scanSaveFiles();
 
-        // Force refresh of save selection UI
-        if (saveSelectUI)
-        {
-            // Free existing buttons
+        if (saveSelectUI) {
             free(saveSelectUI->saveButtons);
-
-            // Get updated save files
             int count;
             const SaveFileInfo *saves = getSaveFiles(&count);
 

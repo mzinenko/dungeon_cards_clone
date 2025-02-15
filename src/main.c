@@ -20,7 +20,6 @@ int main(int argc, const char *argv[]) {
     }
     printf("TTF initialized successfully\n");
 
-    // Create window at initial size, but allow for resizing
     window = SDL_CreateWindow(
         "Dungeon Cards Clone",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -39,7 +38,6 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
 
-    // Initialize render scaling system
     initRenderContext();
 
     // Load font
@@ -53,7 +51,6 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
 
-    // Initialize game systems
     initTextures();
     loadTextures();
     initMenu();
@@ -86,7 +83,6 @@ int main(int argc, const char *argv[]) {
             if (isAnyAnimationRunning())
                 continue;
 
-            // Convert mouse coordinates for input handling
             int mouseX, mouseY;
             SDL_GetMouseState(&mouseX, &mouseY);
             int virtualMouseX, virtualMouseY;
@@ -129,10 +125,8 @@ int main(int argc, const char *argv[]) {
         if (!player->animation.isAnimating && !cardAnim->isAnimating)
             updateAnimations(deltaTime);
 
-        // Begin rendering to virtual resolution
         beginRender();
 
-        // Render current state
         switch (gameContext->currentState) {
             case STATE_MAIN_MENU:
                 drawMainMenu();
@@ -159,13 +153,10 @@ int main(int argc, const char *argv[]) {
                 break;
         }
 
-        // End rendering and scale to window
         endRender();
-
         SDL_Delay(16);
     }
 
-    // Cleanup
     destroyRenderContext();
     TTF_CloseFont(font);
     destroyPlayer();

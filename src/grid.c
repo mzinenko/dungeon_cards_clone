@@ -1,20 +1,15 @@
 #include "../inc/header.h"
 
-void initGrid(int rows, int cols)
-{
+void initGrid(int rows, int cols) {
     grid = malloc(sizeof(Grid));
 
     grid->rows = rows;
     grid->cols = cols;
 
-    // Allocate memory for the grid of cards
     grid->cells = malloc(rows * sizeof(Card *));
-    for (int i = 0; i < rows; i++)
-    {
+    for (int i = 0; i < rows; i++) {
         grid->cells[i] = malloc(cols * sizeof(Card));
-        for (int j = 0; j < cols; j++)
-        {
-            // Initialize with empty cards
+        for (int j = 0; j < cols; j++) {
             grid->cells[i][j] = *createEmptyCard();
         }
     }
@@ -33,11 +28,9 @@ void drawGridBackground(void) {
                 CARD_VIRTUAL_SIZE
             };
 
-            // Draw cell background
             SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
             SDL_RenderFillRect(renderer, &cellRect);
 
-            // Draw cell border
             SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
             SDL_RenderDrawRect(renderer, &cellRect);
         }
@@ -57,7 +50,6 @@ void drawGrid(void) {
                 CARD_VIRTUAL_SIZE
             };
 
-            // Draw cell background
             if (player->x == j && player->y == i) {
                 SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
             } else {
@@ -65,11 +57,9 @@ void drawGrid(void) {
             }
             SDL_RenderFillRect(renderer, &cellRect);
 
-            // Draw cell border
             SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
             SDL_RenderDrawRect(renderer, &cellRect);
 
-            // Draw card if present
             if (grid->cells[i][j].type != CARD_NONE) {
                 SDL_Rect cardRect = {
                     cellRect.x + 2,
@@ -83,14 +73,13 @@ void drawGrid(void) {
     }
 }
 
-void initCardAnimation(void)
-{
+void initCardAnimation(void) {
     cardAnim = malloc(sizeof(CardAnimation));
 
     cardAnim->cards = NULL;
     cardAnim->cardCount = 0;
     cardAnim->isAnimating = 0;
-    cardAnim->animationDuration = 0.3f; // 300ms animation
+    cardAnim->animationDuration = 0.3f; 
     cardAnim->currentTime = 0;
     cardAnim->direction = MOVE_NONE;
 }
@@ -99,7 +88,6 @@ void startCardAnimation(MoveDirection direction) {
     int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
     int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
-    // Count cards that need to move
     int count = 0;
     switch (direction) {
         case MOVE_UP:
@@ -118,14 +106,12 @@ void startCardAnimation(MoveDirection direction) {
             return;
     }
 
-    // Allocate animation data
     cardAnim->cards = malloc(sizeof(AnimatedCard) * count);
     cardAnim->cardCount = count;
     cardAnim->isAnimating = 1;
     cardAnim->currentTime = 0;
     cardAnim->direction = direction;
 
-    // Setup animation data for each card
     int idx = 0;
     switch (direction) {
         case MOVE_UP:
@@ -185,16 +171,14 @@ void startCardAnimation(MoveDirection direction) {
     }
 }
 
-void updateCardAnimation(float deltaTime)
-{
+void updateCardAnimation(float deltaTime) {
     if (!cardAnim->isAnimating)
         return;
 
     cardAnim->currentTime += deltaTime;
     float progress = cardAnim->currentTime / cardAnim->animationDuration;
 
-    if (progress >= 1.0f)
-    {
+    if (progress >= 1.0f) {
         cardAnim->isAnimating = 0;
         free(cardAnim->cards);
         cardAnim->cards = NULL;
@@ -202,11 +186,9 @@ void updateCardAnimation(float deltaTime)
         return;
     }
 
-    // Update card positions using smooth interpolation
-    float easedProgress = progress * progress * (3 - 2 * progress); // Smooth easing
+    float easedProgress = progress * progress * (3 - 2 * progress);
 
-    for (int i = 0; i < cardAnim->cardCount; i++)
-    {
+    for (int i = 0; i < cardAnim->cardCount; i++) {
         cardAnim->cards[i].animationProgress = easedProgress;
         cardAnim->cards[i].currentX = cardAnim->cards[i].startX +
                                       (cardAnim->cards[i].targetX - cardAnim->cards[i].startX) * easedProgress;
@@ -219,14 +201,11 @@ void drawGridWithAnimation(void) {
     int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
     int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
-    // First draw the grid background
     drawGridBackground();
 
     if (cardAnim->isAnimating) {
-        // During animation, only draw non-animated cards
         for (int i = 0; i < grid->rows; i++) {
             for (int j = 0; j < grid->cols; j++) {
-                // Skip the entire row/column being animated based on player's previous position
                 if (((cardAnim->direction == MOVE_LEFT && j >= player->x) || 
                      (cardAnim->direction == MOVE_RIGHT && j <= player->x)) && 
                     (player->y == i)) {
@@ -250,7 +229,6 @@ void drawGridWithAnimation(void) {
             }
         }
 
-        // Draw animated cards on top
         for (int i = 0; i < cardAnim->cardCount; i++) {
             SDL_Rect cellRect = {
                 (int)cardAnim->cards[i].currentX + 2,
@@ -262,7 +240,6 @@ void drawGridWithAnimation(void) {
             drawCardContent(&cardAnim->cards[i].card, cellRect);
         }
     } else {
-        // When not animating, draw all cards normally
         for (int i = 0; i < grid->rows; i++) {
             for (int j = 0; j < grid->cols; j++) {
                 if (grid->cells[i][j].type != CARD_NONE) {
@@ -281,25 +258,19 @@ void drawGridWithAnimation(void) {
     drawPlayer();
 }
 
-void populateGrid(void)
-{
+void populateGrid(void) {
     static int initialized = 0;
     const int y_center = grid->rows / 2 - (grid->rows % 2 == 0 ? 1 : 0);
     const int x_center = grid->cols / 2 - (grid->cols % 2 == 0 ? 1 : 0);
 
-    if (!initialized)
-    {
+    if (!initialized) {
         srand((unsigned int)time(NULL));
         initialized = 1;
     }
 
-    // Populate all cells except center one
-    for (int i = 0; i < grid->rows; i++)
-    {
-        for (int j = 0; j < grid->cols; j++)
-        {
-            if (i != y_center || j != x_center)
-            {
+    for (int i = 0; i < grid->rows; i++) {
+        for (int j = 0; j < grid->cols; j++) {
+            if (i != y_center || j != x_center) {
                 grid->cells[i][j] = *generateCard();
                 grid->cells[i][j].animation.x = j;
                 grid->cells[i][j].animation.y = i;
@@ -310,63 +281,52 @@ void populateGrid(void)
     grid->cells[y_center][x_center] = *createEmptyCard();
 }
 
-void shiftCards(int startRow, int startCol, MoveDirection direction)
-{
-    Card card = *generateCard(); // Generate new card
+void shiftCards(int startRow, int startCol, MoveDirection direction) {
+    Card card = *generateCard(); 
 
-    switch (direction)
-    {
+    switch (direction) {
     case MOVE_UP:
-        for (int row = startRow + 1; row < grid->rows; row++)
-        {
-            // Shift the card at (row, startCol) to (row-1, startCol)
+        for (int row = startRow + 1; row < grid->rows; row++) {        
             grid->cells[row - 1][startCol] = grid->cells[row][startCol];
-            grid->cells[row - 1][startCol].animation.x = startCol; // Update animation.x
-            grid->cells[row - 1][startCol].animation.y = row - 1;  // Update animation.y
+            grid->cells[row - 1][startCol].animation.x = startCol;
+            grid->cells[row - 1][startCol].animation.y = row - 1;
         }
-        // Add new card at bottom and update its animation
+        
         grid->cells[grid->rows - 1][startCol] = card;
         grid->cells[grid->rows - 1][startCol].animation.x = startCol;
         grid->cells[grid->rows - 1][startCol].animation.y = grid->rows - 1;
         break;
 
     case MOVE_DOWN:
-        for (int row = startRow - 1; row >= 0; row--)
-        {
-            // Shift the card at (row, startCol) to (row+1, startCol)
+        for (int row = startRow - 1; row >= 0; row--) {
             grid->cells[row + 1][startCol] = grid->cells[row][startCol];
-            grid->cells[row + 1][startCol].animation.x = startCol; // Update animation.x
-            grid->cells[row + 1][startCol].animation.y = row + 1;  // Update animation.y
+            grid->cells[row + 1][startCol].animation.x = startCol;
+            grid->cells[row + 1][startCol].animation.y = row + 1;
         }
-        // Add new card at top and update its animation
+        
         grid->cells[0][startCol] = card;
         grid->cells[0][startCol].animation.x = startCol;
         grid->cells[0][startCol].animation.y = 0;
         break;
 
     case MOVE_LEFT:
-        for (int col = startCol + 1; col < grid->cols; col++)
-        {
-            // Shift the card at (startRow, col) to (startRow, col-1)
+        for (int col = startCol + 1; col < grid->cols; col++) {
             grid->cells[startRow][col - 1] = grid->cells[startRow][col];
-            grid->cells[startRow][col - 1].animation.x = col - 1;  // Update animation.x
-            grid->cells[startRow][col - 1].animation.y = startRow; // Update animation.y
-        }
-        // Add new card at right and update its animation
+            grid->cells[startRow][col - 1].animation.x = col - 1; 
+            grid->cells[startRow][col - 1].animation.y = startRow;
+        }        
         grid->cells[startRow][grid->cols - 1] = card;
         grid->cells[startRow][grid->cols - 1].animation.x = grid->cols - 1;
         grid->cells[startRow][grid->cols - 1].animation.y = startRow;
         break;
 
     case MOVE_RIGHT:
-        for (int col = startCol - 1; col >= 0; col--)
-        {
-            // Shift the card at (startRow, col) to (startRow, col+1)
+        for (int col = startCol - 1; col >= 0; col--) {
             grid->cells[startRow][col + 1] = grid->cells[startRow][col];
-            grid->cells[startRow][col + 1].animation.x = col + 1;  // Update animation.x
-            grid->cells[startRow][col + 1].animation.y = startRow; // Update animation.y
+            grid->cells[startRow][col + 1].animation.x = col + 1; 
+            grid->cells[startRow][col + 1].animation.y = startRow;
         }
-        // Add new card at left and update its animation
+        
         grid->cells[startRow][0] = card;
         grid->cells[startRow][0].animation.x = 0;
         grid->cells[startRow][0].animation.y = startRow;
@@ -376,35 +336,29 @@ void shiftCards(int startRow, int startCol, MoveDirection direction)
         break;
     }
 
-    // Print the new card details including its position and animation
     printf("New card at row %d col %d: type %s rarity %d attack %d defense %d value %d\n",
            startRow, startCol, cardTypeToString(card.type), card.rarity, card.attack.damage, card.defense.hp, card.value.value);
 }
 
-void interaction(void)
-{
+void interaction(void) {
     printf("Player coords: (%d, %d)\n", player->x, player->y);
     Card card = grid->cells[player->y][player->x];
-    int refill_previous = 0; // Flag to track if we should refill previous position
+    int refill_previous = 0; 
 
-    switch (card.type)
-    {
-    case CARD_ENEMY:
-    {
+    switch (card.type) {
+    case CARD_ENEMY: {
         printf("Player melee damage: %d\n", player->attack.meleeDamage);
         int enemy_hp_left = card.defense.hp + card.defense.armor - player->attack.meleeDamage;
         int damage = enemy_hp_left > 0 ? card.attack.damage + enemy_hp_left : 0;
         int defense_left = player->defense.armor - damage;
         int player_hp_left = player->defense.hp - (defense_left > 0 ? 0 : -defense_left);
 
-        if (player_hp_left > 0)
-        {
+        if (player_hp_left > 0) {
             player->defense.hp = player_hp_left;
             player->defense.armor = defense_left > 0 ? defense_left : 0;
             refill_previous = 1;
         }
-        else
-        {
+        else {
             player->defense.hp = 0;
             player->isAlive = 0;
             printf("Player died\n");
@@ -423,18 +377,14 @@ void interaction(void)
         refill_previous = 1;
         break;
     case CARD_COIN:
-        // Add gold value
-        player->gold += card.value.value;
-        // Add gems based on rarity
+        player->gold += card.value.value;        
         progress->gems[card.rarity] += (int)(card.value.multiplier * 1.0f);
         refill_previous = 1;
         break;
     case CARD_POTION:
-        if (player->defense.hp < player->defense.maxHp)
-        {
+        if (player->defense.hp < player->defense.maxHp) {
             player->defense.hp += card.value.value;
-            if (player->defense.hp > player->defense.maxHp)
-            {
+            if (player->defense.hp > player->defense.maxHp) {
                 player->defense.hp = player->defense.maxHp;
             }
         }
@@ -443,32 +393,25 @@ void interaction(void)
     default:
         break;
     }
-
-    // If interaction was successful, refill the previous position
+    
     if (refill_previous &&
-        (player->prevX != player->x || player->prevY != player->y))
-    { // Only refill if we actually moved
-
+        (player->prevX != player->x || player->prevY != player->y)) {
         freeCard(&grid->cells[player->prevY][player->prevX]);
-        // Clear the current card at the interaction spot
         grid->cells[player->y][player->x] = *createEmptyCard();
         freeCard(&grid->cells[player->prevY][player->prevX]);
         grid->cells[player->prevY][player->prevX] = *createEmptyCard();
 
         enemyTurn();
         turn++;
-        if (turn % 5 == 0)
-        {
+        if (turn % 5 == 0) {
             printf("Turn %d\n", turn);
             eventTurn();
         }
     }
 }
 
-void destroyGrid(void)
-{
-    for (int i = 0; i < grid->rows; i++)
-    {
+void destroyGrid(void) {
+    for (int i = 0; i < grid->rows; i++) {
         freeCard(grid->cells[i]);
         free(grid->cells[i]);
     }

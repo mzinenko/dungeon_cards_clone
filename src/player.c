@@ -4,14 +4,12 @@
 void createPlayer(Texture *texture) {
     player = malloc(sizeof(Player));
     
-    // Initialize basic properties
     player->x = 2;
     player->y = 2;
     player->prevX = 2;
     player->prevY = 2;
     player->isAlive = true;
 
-    // Set up combat stats
     player->attack.meleeDamage = 1;
     player->attack.damage = 2;
     player->attack.range = 1;
@@ -30,7 +28,6 @@ void createPlayer(Texture *texture) {
     player->base.damage = 0;
     player->base.armor = 0;
 
-    // Initialize animation properties using virtual coordinates
     int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
     int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
@@ -52,18 +49,15 @@ void drawPlayer(void) {
         CARD_VIRTUAL_SIZE
     };
 
-    // Draw player cell background
     SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
     SDL_RenderFillRect(renderer, &playerRect);
 
-    // Only proceed if we have valid texture data
     if (!player->texture || !player->texture->texture)
         return;
 
     SDL_Rect spriteClip;
     const Texture *playerTexture = player->texture;
 
-    // Calculate animation frame
     static int frame = 0;
     static Uint32 lastFrameTime = 0;
     Uint32 currentTime = SDL_GetTicks();
@@ -73,7 +67,6 @@ void drawPlayer(void) {
         lastFrameTime = currentTime;
     }
 
-    // Get correct frame from sprite sheet
     if (playerTexture->alignment) {
         spriteClip.x = playerTexture->clipRect.x;
         spriteClip.y = playerTexture->clipRect.y + frame * 
@@ -88,7 +81,6 @@ void drawPlayer(void) {
         spriteClip.h = playerTexture->clipRect.h;
     }
 
-    // Scale sprite to fit card while maintaining aspect ratio
     float scale = fminf(
         (float)(CARD_VIRTUAL_SIZE - 8) / spriteClip.w,
         (float)(CARD_VIRTUAL_SIZE - 8) / spriteClip.h
@@ -107,8 +99,7 @@ void drawPlayer(void) {
     SDL_RenderCopy(renderer, playerTexture->texture, &spriteClip, &destRect);
 }
 
-void drawPlayerStats(void) {
-    // Draw stats panel in top left corner
+void drawPlayerStats(void) {    
     SDL_Rect statsPanel = {
         STATS_TEXT_PADDING, 
         STATS_TEXT_PADDING, 
@@ -116,7 +107,6 @@ void drawPlayerStats(void) {
         STATS_PANEL_HEIGHT
     };
 
-    // Semi-transparent background
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
     SDL_RenderFillRect(renderer, &statsPanel);
@@ -126,7 +116,6 @@ void drawPlayerStats(void) {
 
     SDL_Color textColor = {255, 255, 255, 255};
 
-    // Draw HP bar
     SDL_Rect hpBarBg = {
         statsPanel.x + STATS_TEXT_PADDING,
         statsPanel.y + STATS_TEXT_PADDING * 3,
@@ -145,7 +134,6 @@ void drawPlayerStats(void) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &hpBarFg);
 
-    // Draw stats text
     int textY = statsPanel.y + STATS_BAR_HEIGHT + STATS_TEXT_PADDING * 4;
     char statText[32];
 
@@ -187,7 +175,6 @@ void updatePlayerAnimation(float deltaTime) {
         player->animation.animationProgress = 1.0f;
         player->animation.isAnimating = false;
 
-        // Snap to final position using virtual coordinates
         int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
         int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
         player->animation.currentX = gridX + player->x * CARD_VIRTUAL_SIZE;
@@ -195,7 +182,6 @@ void updatePlayerAnimation(float deltaTime) {
         return;
     }
 
-    // Calculate current position using smooth easing
     float easedProgress = player->animation.animationProgress * 
         player->animation.animationProgress * 
         (3 - 2 * player->animation.animationProgress);
@@ -212,14 +198,11 @@ void updatePlayerAnimation(float deltaTime) {
     player->animation.currentY = startY + (targetY - startY) * easedProgress;
 }
 
-void handlePlayerInput(int gridRows, int gridCols)
-{
+void handlePlayerInput(int gridRows, int gridCols) {
     MoveDirection moveDir = MOVE_NONE;
 
-    if (event.type == SDL_KEYDOWN)
-    {
-        switch (event.key.keysym.sym)
-        {
+    if (event.type == SDL_KEYDOWN) {
+        switch (event.key.keysym.sym) {
         case SDLK_UP:
             movePlayer(0, -1, gridRows, gridCols, &moveDir);
             break;
@@ -234,11 +217,8 @@ void handlePlayerInput(int gridRows, int gridCols)
             break;
         }
     }
-    if (event.type == SDL_MOUSEBUTTONDOWN)
-    {
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
-            // Translate mouse coordinates to grid coordinates
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT) {
             int gridX = (VIRTUAL_WIDTH - (grid->cols * CARD_VIRTUAL_SIZE)) / 2;
             int gridY = (VIRTUAL_HEIGHT - (grid->rows * CARD_VIRTUAL_SIZE)) / 2;
 
@@ -249,17 +229,14 @@ void handlePlayerInput(int gridRows, int gridCols)
 
             int gridCol = (mouseX - gridX) / CARD_VIRTUAL_SIZE;
             int gridRow = (mouseY - gridY) / CARD_VIRTUAL_SIZE;
-
-            // Check if clicked card is an enemy
+            
             if (gridRow >= 0 && gridRow < grid->rows &&
                 gridCol >= 0 && gridCol < grid->cols &&
-                grid->cells[gridRow][gridCol].type == CARD_ENEMY && !isShooting)
-            {
+                grid->cells[gridRow][gridCol].type == CARD_ENEMY && !isShooting) {
                 enemyInteraction(gridCol, gridRow);
             }
         }
-        if (event.type == SDL_MOUSEMOTION)
-        {
+        if (event.type == SDL_MOUSEMOTION) {
             int gridX = (VIRTUAL_WIDTH - (grid->cols * CARD_VIRTUAL_SIZE)) / 2;
             int gridY = (VIRTUAL_HEIGHT - (grid->rows * CARD_VIRTUAL_SIZE)) / 2;
             int mouseX = event.motion.x;
@@ -267,51 +244,40 @@ void handlePlayerInput(int gridRows, int gridCols)
 
             int gridCol = (mouseX - gridX) / CARD_VIRTUAL_SIZE;
             int gridRow = (mouseY - gridY) / CARD_VIRTUAL_SIZE;
-
-            // Check if mouse is over an enemy card
+            
             if (gridRow >= 0 && gridRow < grid->rows &&
                 gridCol >= 0 && gridCol < grid->cols &&
-                grid->cells[gridRow][gridCol].type == CARD_ENEMY)
-            {
-                if (canAttackEnemy(gridCol, gridRow))
-                {
+                grid->cells[gridRow][gridCol].type == CARD_ENEMY) {
+                if (canAttackEnemy(gridCol, gridRow)) {
                     SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
                 }
-                else
-                {
+                else {
                     SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO));
                 }
             }
-            else
-            {
+            else {
                 SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
             }
         }
     }
 }
 
-void movePlayer(int dx, int dy, int gridRows, int gridCols, MoveDirection *outDirection)
-{
+void movePlayer(int dx, int dy, int gridRows, int gridCols, MoveDirection *outDirection) {
     *outDirection = MOVE_NONE;
 
     int newX = player->x + dx;
     int newY = player->y + dy;
 
-    if (newX >= 0 && newX < gridCols && newY >= 0 && newY < gridRows)
-    {
-        // Store current position as previous
+    if (newX >= 0 && newX < gridCols && newY >= 0 && newY < gridRows) {
         player->prevX = player->x;
         player->prevY = player->y;
 
-        // Update target position
         player->x = newX;
         player->y = newY;
 
-        // Start animation
         player->animation.isAnimating = 1;
         player->animation.animationProgress = 0.0f;
 
-        // Determine direction
         if (dx > 0)
             *outDirection = MOVE_RIGHT;
         else if (dx < 0)
@@ -324,8 +290,7 @@ void movePlayer(int dx, int dy, int gridRows, int gridCols, MoveDirection *outDi
         player->animation.currentMove = *outDirection;
     }
 
-    if (outDirection != MOVE_NONE)
-    {
+    if (outDirection != MOVE_NONE) {
         interaction();
 
         startCardAnimation(*outDirection);
@@ -333,8 +298,7 @@ void movePlayer(int dx, int dy, int gridRows, int gridCols, MoveDirection *outDi
     }
 }
 
-bool canAttackEnemy(const int enemyX, int enemyY)
-{
+bool canAttackEnemy(const int enemyX, int enemyY) {
     if (player->attack.ammo <= 0)
         return false;
 
@@ -357,11 +321,9 @@ void resetPlayerPosition(void) {
     player->animation.currentMove = MOVE_NONE;
 }
 
-void destroyPlayer(void)
-{
-    if (player->texture)
-    {
+void destroyPlayer(void) {
+    if (player->texture) {
         SDL_DestroyTexture(player->texture->texture);
-        player->texture = NULL; // Prevent dangling pointer
+        player->texture = NULL; 
     }
 }

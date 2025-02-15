@@ -3,7 +3,6 @@
 void initRenderContext(void) {
     renderCtx = malloc(sizeof(RenderContext));
     
-    // Create render target texture
     renderCtx->renderTarget = SDL_CreateTexture(
         renderer,
         SDL_PIXELFORMAT_RGBA8888,
@@ -12,10 +11,7 @@ void initRenderContext(void) {
         VIRTUAL_HEIGHT
     );
     
-    // Set texture scaling quality
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");  // For pixel-perfect scaling
-    
-    // Initial scale calculation
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
     updateRenderScale();
 }
 
@@ -23,17 +19,13 @@ void updateRenderScale(void) {
     int windowWidth, windowHeight;
     SDL_GetWindowSize(window, &windowWidth, &windowHeight);
     
-    // Calculate scaling factors
     float scaleX = (float)windowWidth / VIRTUAL_WIDTH;
     float scaleY = (float)windowHeight / VIRTUAL_HEIGHT;
-    
-    // Use the smaller scale factor to maintain aspect ratio
     float scale = fminf(scaleX, scaleY);
     
     renderCtx->scaleX = scale;
     renderCtx->scaleY = scale;
-    
-    // Calculate letterboxing
+
     int scaledWidth = (int)(VIRTUAL_WIDTH * scale);
     int scaledHeight = (int)(VIRTUAL_HEIGHT * scale);
     
@@ -44,30 +36,25 @@ void updateRenderScale(void) {
 }
 
 void beginRender(void) {
-    // Switch render target to our virtual resolution texture
     SDL_SetRenderTarget(renderer, renderCtx->renderTarget);
     SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
     SDL_RenderClear(renderer);
 }
 
 void endRender(void) {
-    // Switch back to the window target
     SDL_SetRenderTarget(renderer, NULL);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     
-    // Render the scaled virtual texture
     SDL_RenderCopy(renderer, renderCtx->renderTarget, NULL, &renderCtx->outputRect);
     SDL_RenderPresent(renderer);
 }
 
-// Convert window coordinates to virtual coordinates
 void windowToVirtual(int windowX, int windowY, int* virtualX, int* virtualY) {
     *virtualX = (int)((windowX - renderCtx->outputRect.x) / renderCtx->scaleX);
     *virtualY = (int)((windowY - renderCtx->outputRect.y) / renderCtx->scaleY);
 }
 
-// Convert virtual coordinates to window coordinates
 void virtualToWindow(int virtualX, int virtualY, int* windowX, int* windowY) {
     *windowX = (int)(virtualX * renderCtx->scaleX) + renderCtx->outputRect.x;
     *windowY = (int)(virtualY * renderCtx->scaleY) + renderCtx->outputRect.y;
@@ -84,17 +71,14 @@ void destroyRenderContext(void) {
 }
 
 void drawButton(const char *text, SDL_Rect rect, bool isHovered) {
-    // Get the UI button texture (it's the last texture in uiTextures array)
-    Texture *buttonTexture = &uiTextures[8]; // ui_button_small
+    Texture *buttonTexture = &uiTextures[8]; 
     
-    // Calculate which frame to use based on state
     int frame = isHovered ? 1 : 0;
 
     SDL_Color textColor = {255, 255, 255, 255};
     SDL_Surface *textSurface = TTF_RenderText_Solid(font, text, textColor);
     if (textSurface) {
     
-    // Calculate sprite clip based on frame
     SDL_Rect spriteClip = {
         buttonTexture->clipRect.x + frame * (buttonTexture->clipRect.w + buttonTexture->frameGap),
         buttonTexture->clipRect.y,
@@ -107,10 +91,7 @@ void drawButton(const char *text, SDL_Rect rect, bool isHovered) {
     rect.h = rect.h > textSurface->h ? rect.h : textSurface->h;
     rect.h += 2;
 
-    // Draw the button texture stretched to fit the target rect
     SDL_RenderCopy(renderer, buttonTexture->texture, &spriteClip, &rect);
-    
-    // Draw button text
 
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
         if (textTexture) {
@@ -127,14 +108,11 @@ void drawButton(const char *text, SDL_Rect rect, bool isHovered) {
     }
 }
 
-void renderText(const char *text, int x, int y, SDL_Color color)
-{
+void renderText(const char *text, int x, int y, SDL_Color color) {
     SDL_Surface *surface = TTF_RenderText_Solid(font, text, color);
-    if (surface)
-    {
+    if (surface) {
         SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-        if (texture)
-        {
+        if (texture) {
             SDL_Rect destRect = {x, y, surface->w, surface->h};
             SDL_RenderCopy(renderer, texture, NULL, &destRect);
             SDL_DestroyTexture(texture);
@@ -143,8 +121,7 @@ void renderText(const char *text, int x, int y, SDL_Color color)
     }
 }
 
-bool isMouseOverButton(int mouseX, int mouseY, SDL_Rect button)
-{
+bool isMouseOverButton(int mouseX, int mouseY, SDL_Rect button) {
     return (mouseX >= button.x && mouseX <= button.x + button.w &&
             mouseY >= button.y && mouseY <= button.y + button.h);
 }
