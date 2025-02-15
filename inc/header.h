@@ -1,3 +1,6 @@
+#ifndef HEADER_H
+#define HEADER_H
+
 #include "types.h"
 
 /*
@@ -125,7 +128,7 @@ void resetPlayerPosition(void);
 
 void destroyPlayer(void);
 
-// projectile.c ✅
+// projectile.c 
 
 void renderProjectiles(void);
 
@@ -133,7 +136,7 @@ void updateProjectiles(Animation *animation, float deltaTime);
 
 void shootProjectile(float startX, float startY, float targetX, float targetY, float speed);
 
-// render.c ✅
+// render.c 
 
 void initRenderContext(void);
 void updateRenderScale(void);
@@ -148,7 +151,7 @@ void renderText(const char *text, int x, int y, SDL_Color color);
 
 bool isMouseOverButton(int mouseX, int mouseY, SDL_Rect button);
 
-// save.c ✅
+// save.c
 
 void scanSaveFiles(void);
 bool createNewSave(const char *filename);
@@ -165,7 +168,7 @@ void drawFileBrowser(void);
 bool handleFileBrowserInput(void);
 void cleanupFileBrowser(void);
 
-// texture.c ✅
+// texture.c
 
 void initTextures(void);
 
@@ -174,14 +177,13 @@ SDL_Texture *loadTexture(const char *filePath);
 
 void destroyAllTextures(void);
 
-// utils.c ✅
+// utils.c 
 
 bool isInRange(int x1, int y1, int x2, int y2, int range);
 float frandomInRange(float min, float max);
 int randomInRange(int min, int max);
 char *mx_strdup(const char *str);
 
-//------------------------------------------------
 
 void startCardAnimation(MoveDirection direction);
 void updateCardAnimation(float deltaTime);
@@ -225,4 +227,4 @@ void applyStartUpgrades(void);
 void applyCombatTraining(int currentLevel);
 void applyBallisticExpertise(int currentLevel);
 
-
+#endif
