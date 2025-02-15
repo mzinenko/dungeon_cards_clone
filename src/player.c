@@ -49,13 +49,8 @@ void drawPlayer(void) {
         CARD_VIRTUAL_SIZE
     };
 
-<<<<<<< HEAD
-    SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
-    SDL_RenderFillRect(renderer, &playerRect);
-=======
     // Draw player cell background
     SDL_RenderCopy(renderer, uiTextures[11].texture, NULL, &playerRect);
->>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
 
     if (!player->texture || !player->texture->texture)
         return;

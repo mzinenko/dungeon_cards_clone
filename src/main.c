@@ -21,14 +21,11 @@ int main(int argc, const char *argv[]) {
     }
     printf("TTF initialized successfully\n");
 
-<<<<<<< HEAD
-=======
     // Initialize audio system
     initAudioManager();
     printf("Audio system initialized\n");
 
     // Create window at initial size, but allow for resizing
->>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
     window = SDL_CreateWindow(
         "Dungeon Cards Clone",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -180,11 +177,8 @@ int main(int argc, const char *argv[]) {
         SDL_Delay(16);
     }
 
-<<<<<<< HEAD
-=======
     // Cleanup
     cleanupAudioManager();
->>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
     destroyRenderContext();
     TTF_CloseFont(font);
     destroyPlayer();

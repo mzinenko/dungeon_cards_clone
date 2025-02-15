@@ -36,13 +36,7 @@ void drawGridBackground(void) {
                 CARD_VIRTUAL_SIZE
             };
 
-<<<<<<< HEAD
-            SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
-            SDL_RenderFillRect(renderer, &cellRect);
-
-=======
             // Draw cell border
->>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
             SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
             SDL_RenderDrawRect(renderer, &cellRect);
         }

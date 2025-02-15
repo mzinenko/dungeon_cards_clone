@@ -180,16 +180,6 @@ void drawMainMenu(void) {
 }
 
 void drawHubInterface(void) {
-<<<<<<< HEAD
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderFillRect(renderer, NULL);
-
-    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-    SDL_RenderFillRect(renderer, &hubInterface->statsRect);
-
-    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    SDL_RenderFillRect(renderer, &hubInterface->playerPhotoRect);
-=======
     // Draw player stats panel
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderFillRect(renderer, &hubInterface->statsRect);
@@ -203,7 +193,6 @@ void drawHubInterface(void) {
     
     SDL_RenderCopy(renderer, heroTextures[2].texture, NULL, &frameRect);
     SDL_RenderCopy(renderer, heroTextures[1].texture, NULL, &hubInterface->playerPhotoRect);
->>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
 
     SDL_RenderFillRect(renderer, &hubInterface->godsRect);
 
@@ -694,13 +683,6 @@ void cleanupSaveSelectUI(void) {
 }
 
 void drawGameplayUI(void) {
-<<<<<<< HEAD
-    SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
-    SDL_RenderClear(renderer);
-
-=======
-    // Begin rendering to virtual resolution
->>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
     renderEventObserver();
     drawGridWithAnimation();
     drawPlayerStats();
