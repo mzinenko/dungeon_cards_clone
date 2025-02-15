@@ -1,7 +1,6 @@
 #include "../inc/header.h"
 
-void initCard(Card *card)
-{
+void initCard(Card *card) {
     card->id = NULL;
     card->type = CARD_NONE;
     card->rarity = RARITY_COMMON;
@@ -123,11 +122,10 @@ void drawCardContent(Card *card, SDL_Rect cardRect) {
     }
 }
 
-Card *createEmptyCard(void)
-{
+Card *createEmptyCard(void) {
     Card *card = malloc(sizeof(Card));
 
-    *card = (Card){
+    *card = (Card) {
         .type = CARD_NONE,
         .rarity = RARITY_COMMON,
         .attack = {0, 0, 0, 0.0f, 0.0f},
@@ -141,8 +139,7 @@ Card *createEmptyCard(void)
     return card;
 }
 
-Card *createCard(CardType type, CardRarity rarity)
-{
+Card *createCard(CardType type, CardRarity rarity) {
     Card *card = malloc(sizeof(Card));
     memset(card, 0, sizeof(Card));
 
@@ -150,7 +147,7 @@ Card *createCard(CardType type, CardRarity rarity)
     card->rarity = rarity;
     card->lastFrameTime = SDL_GetTicks();
 
-    // Generate rarity-based ranges
+    
     float damageMin = RARITY_RANGES[card->rarity].damageMin;
     float damageMax = RARITY_RANGES[card->rarity].damageMax;
     float hpMin = RARITY_RANGES[card->rarity].hpMin;
@@ -158,9 +155,7 @@ Card *createCard(CardType type, CardRarity rarity)
     float armorMin = RARITY_RANGES[card->rarity].armorMin;
     float armorMax = RARITY_RANGES[card->rarity].armorMax;
 
-    // Type-specific generation
-    switch (card->type)
-    {
+    switch (card->type) {
     case CARD_ENEMY:
         card->attack.damage = frandomInRange(damageMin, damageMax);
         card->attack.range = rand() % 3 + 1;
@@ -190,14 +185,14 @@ Card *createCard(CardType type, CardRarity rarity)
         break;
     case CARD_COIN:
         card->value.value = frandomInRange(1, 10);
-        card->value.multiplier = frandomInRange(1.0f, 2.0f); // Add multiplier for gem calculation
-        card->texture = &coinTextures[card->rarity];         // Use rarity for texture selection
+        card->value.multiplier = frandomInRange(1.0f, 2.0f); 
+        card->texture = &coinTextures[card->rarity];  
         break;
     default:
         break;
     }
 
-    // Optional: Generate unique ID
+
     char idBuffer[32];
     snprintf(idBuffer, sizeof(idBuffer), "%s_%d",
              cardTypeToString(card->type), rand() % 1000);
@@ -206,28 +201,24 @@ Card *createCard(CardType type, CardRarity rarity)
     return card;
 }
 
-Card *generateCard(void)
-{
+Card *generateCard(void) {
     int weightCount = 0;
     CardWeight *weights = calculateCardWeights(&weightCount);
 
-    // Select type and rarity
+
     CardType type = selectCardTypeByWeight(weights, weightCount);
     CardRarity rarity = selectRarityByWeight();
 
     return createCard(type, rarity);
 }
 
-void getCardColor(const Card *card, SDL_Color *color)
-{
+void getCardColor(const Card *card, SDL_Color *color) {
     if (card)
         *color = (SDL_Color){70, 70, 70, 255};
 }
 
-char *cardTypeToString(CardType type)
-{
-    switch (type)
-    {
+char *cardTypeToString(CardType type) {
+    switch (type) {
     case CARD_ENEMY:
         return "Enemy";
     case CARD_WEAPON:
@@ -243,25 +234,20 @@ char *cardTypeToString(CardType type)
     }
 }
 
-bool isTriggered(const Card *card)
-{
+bool isTriggered(const Card *card) {
     return card->defense.armor != card->defense.maxArmor || card->defense.hp != card->defense.maxHp;
 }
 
-void freeCard(Card *card)
-{
-    if (card->id)
-    {
+void freeCard(Card *card) {
+    if (card->id) {
         free(card->id);
         card->id = NULL;
     }
-    if (card->texture)
-    {
+    if (card->texture) {
         SDL_DestroyTexture(card->texture->texture);
         card->texture = NULL;
     }
-    if (card->customData)
-    {
+    if (card->customData) {
         free(card->customData);
         card->customData = NULL;
     }
