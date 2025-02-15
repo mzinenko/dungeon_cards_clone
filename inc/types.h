@@ -299,8 +299,7 @@ typedef struct
     char *name;
     int relationship; // 0-100
     FactionType type; // Add this
-    SDL_Texture *banner;
-    SDL_Rect bannerRect;
+    Texture *texture;
     bool isHovered; // Add this for hover effects
 } Banner;
 

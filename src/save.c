@@ -347,7 +347,7 @@ bool importSaveFile(const char *sourcePath)
             for (int i = 0; i < count; i++)
             {
                 saveSelectUI->saveButtons[i].rect = (SDL_Rect){
-                    WINDOW_WIDTH / 2 - 200,
+                    VIRTUAL_WIDTH / 2 - 200,
                     100 + i * 60,
                     400,
                     50};

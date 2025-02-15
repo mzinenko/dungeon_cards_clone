@@ -29,6 +29,7 @@ void initTextures(void)
         {"resource/public/ui/ui_btn_settings.bmp", NULL, {0, 0, 248, 248}, 3, 0, 8, false},
         {"resource/public/ui/ui_btn_play.bmp", NULL, {0, 0, 248, 248}, 3, 0, 8, false},
         {"resource/public/ui/ui_btn_info.bmp", NULL, {0, 0, 248, 248}, 3, 0, 8, false},
+        {"resource/public/ui/ui_banner_2.bmp", NULL, {0, 0, 174, 174}, 1, 0, 0, true},
     };
 
     eventObserverTextures = _eventObserverTextures;
