@@ -97,18 +97,8 @@ void drawFactionUI(void) {
         return;
 
     // Draw background
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderFillRect(renderer, NULL);
-
-    // Draw leader art area
-    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-    SDL_RenderFillRect(renderer, &currentFaction->ui.leaderArtRect);
-
-    // Draw content area
-    SDL_RenderFillRect(renderer, &currentFaction->ui.contentRect);
-
-    // Draw dialog area
-    SDL_RenderFillRect(renderer, &currentFaction->ui.dialogRect);
+    SDL_Rect backgroundRect = {0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
+    SDL_RenderCopy(renderer, uiTextures[5 + currentFaction->type].texture, &uiTextures[5 + currentFaction->type].clipRect, &backgroundRect);
 
     // Draw faction name and rank
     SDL_Color textColor = {255, 255, 255, 255};

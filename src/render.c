@@ -83,32 +83,43 @@ void destroyRenderContext(void) {
     }
 }
 
-void drawButton(const char *text, SDL_Rect rect, bool isHovered)
-{
-    // Draw button background
-    SDL_SetRenderDrawColor(renderer,
-                           isHovered ? 100 : 70,
-                           isHovered ? 100 : 70,
-                           isHovered ? 100 : 70, 255);
-    SDL_RenderFillRect(renderer, &rect);
+void drawButton(const char *text, SDL_Rect rect, bool isHovered) {
+    // Get the UI button texture (it's the last texture in uiTextures array)
+    Texture *buttonTexture = &uiTextures[8]; // ui_button_small
+    
+    // Calculate which frame to use based on state
+    int frame = isHovered ? 1 : 0;
 
-    // Draw button border
-    SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
-    SDL_RenderDrawRect(renderer, &rect);
-
-    // Draw button text
     SDL_Color textColor = {255, 255, 255, 255};
     SDL_Surface *textSurface = TTF_RenderText_Solid(font, text, textColor);
-    if (textSurface)
-    {
+    if (textSurface) {
+    
+    // Calculate sprite clip based on frame
+    SDL_Rect spriteClip = {
+        buttonTexture->clipRect.x + frame * (buttonTexture->clipRect.w + buttonTexture->frameGap),
+        buttonTexture->clipRect.y,
+        buttonTexture->clipRect.w,
+        buttonTexture->clipRect.h
+    };
+
+    rect.w = rect.w > textSurface->w ? rect.w : textSurface->w;
+    rect.w += 4;
+    rect.h = rect.h > textSurface->h ? rect.h : textSurface->h;
+    rect.h += 2;
+
+    // Draw the button texture stretched to fit the target rect
+    SDL_RenderCopy(renderer, buttonTexture->texture, &spriteClip, &rect);
+    
+    // Draw button text
+
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        if (textTexture)
-        {
+        if (textTexture) {
             SDL_Rect textRect = {
                 rect.x + (rect.w - textSurface->w) / 2,
-                rect.y + (rect.h - textSurface->h) / 2,
+                rect.y + (rect.h - textSurface->h) / 2 + 1,
                 textSurface->w,
-                textSurface->h};
+                textSurface->h
+            };
             SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
             SDL_DestroyTexture(textTexture);
         }
