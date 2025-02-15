@@ -12,15 +12,7 @@ void initFactions(void)
         .questCount = 0,
         .activeQuestCount = 0,
         .currentDialog = NULL,
-        .ui = {
-            .leaderArtRect = {WINDOW_WIDTH / 4 - 200, 100, 400, 500},
-            .dialogRect = {WINDOW_WIDTH / 4 - 200, 620, WINDOW_WIDTH / 2 + 400, 150},
-            .contentRect = {WINDOW_WIDTH / 2 + 50, 100, 500, 500},
-            .isStoreTab = true,
-            .dialogState = DIALOG_FIRST_ENCOUNTER,
-            .returnButton = {WINDOW_WIDTH - 120, 20, 100, 40},
-            .returnHovered = false,
-        }};
+        .ui = {.contentRect = {0, 0, 0, 0}, .returnButton = {0, 0, 0, 0}, .leaderArtRect = {0, 0, 0, 0}, .dialogRect = {0, 0, 0, 0}}};
 
     // Initialize Crimson Path
     crimsonFaction = malloc(sizeof(Faction));
@@ -32,20 +24,49 @@ void initFactions(void)
         .questCount = 0,
         .activeQuestCount = 0,
         .currentDialog = NULL,
-        .ui = {
-            .leaderArtRect = {WINDOW_WIDTH / 4 - 200, 100, 400, 500},
-            .dialogRect = {WINDOW_WIDTH / 4 - 200, 620, WINDOW_WIDTH / 2 + 400, 150},
-            .contentRect = {WINDOW_WIDTH / 2 + 50, 100, 500, 500},
-            .isStoreTab = true,
-            .dialogState = DIALOG_FIRST_ENCOUNTER,
-            .returnButton = {WINDOW_WIDTH - 120, 20, 100, 40},
-            .returnHovered = false,
-        }};
+        .ui = {.contentRect = {0, 0, 0, 0}, .returnButton = {0, 0, 0, 0}, .leaderArtRect = {0, 0, 0, 0}, .dialogRect = {0, 0, 0, 0}}};
+
+    initFactionUI(vanguardFaction);
+    initFactionUI(crimsonFaction);
 
     // Load faction leader textures
     // We'll implement this later when we have the art assets
     initFactionUpgrades(vanguardFaction);
     initFactionUpgrades(crimsonFaction);
+}
+
+void initFactionUI(Faction* faction) {
+    faction->ui = (FactionUI){
+        .leaderArtRect = {
+            FACTION_PADDING,
+            FACTION_PADDING,
+            VIRTUAL_WIDTH * 0.3f,  // 30% of width for leader art
+            VIRTUAL_HEIGHT * 0.6f   // 60% of height for leader art
+        },
+        .dialogRect = {
+            FACTION_PADDING,
+            VIRTUAL_HEIGHT - FACTION_DIALOG_HEIGHT - FACTION_PADDING,
+            VIRTUAL_WIDTH - FACTION_PADDING * 2,
+            FACTION_DIALOG_HEIGHT
+        },
+        .contentRect = {
+            VIRTUAL_WIDTH * 0.3f + FACTION_PADDING * 2,
+            FACTION_TAB_HEIGHT + FACTION_PADDING * 2,
+            VIRTUAL_WIDTH * 0.7f - FACTION_PADDING * 3,
+            VIRTUAL_HEIGHT - FACTION_TAB_HEIGHT - FACTION_DIALOG_HEIGHT - FACTION_PADDING * 4
+        },
+        .returnButton = {
+            VIRTUAL_WIDTH - FACTION_BUTTON_WIDTH - FACTION_PADDING,
+            FACTION_PADDING,
+            FACTION_BUTTON_WIDTH,
+            FACTION_BUTTON_HEIGHT
+        },
+        .isStoreTab = true,
+        .dialogState = DIALOG_FIRST_ENCOUNTER,
+        .returnHovered = false,
+        .scrollOffset = 0,
+        .maxScrollOffset = 0
+    };
 }
 
 void switchToFaction(FactionType type)
@@ -71,8 +92,7 @@ void switchToFaction(FactionType type)
     }
 }
 
-void drawFactionUI(void)
-{
+void drawFactionUI(void) {
     if (!currentFaction)
         return;
 
@@ -84,7 +104,7 @@ void drawFactionUI(void)
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderFillRect(renderer, &currentFaction->ui.leaderArtRect);
 
-    // Draw content area (store/quests)
+    // Draw content area
     SDL_RenderFillRect(renderer, &currentFaction->ui.contentRect);
 
     // Draw dialog area
@@ -93,199 +113,305 @@ void drawFactionUI(void)
     // Draw faction name and rank
     SDL_Color textColor = {255, 255, 255, 255};
     char rankText[64];
-    snprintf(rankText, sizeof(rankText), "%s - Rank: %d",
+    snprintf(rankText, sizeof(rankText), "%s - Standing: %d",
              currentFaction->name, currentFaction->playerRank);
-    renderText(rankText, 20, 20, textColor);
-
-    // Draw store/quest tabs
-    SDL_Rect storeTab = {
-        currentFaction->ui.contentRect.x,
-        currentFaction->ui.contentRect.y - 40,
-        100,
-        40};
-    SDL_Rect questTab = {
-        currentFaction->ui.contentRect.x + 110,
-        currentFaction->ui.contentRect.y - 40,
-        100,
-        40};
+    renderText(rankText, FACTION_PADDING * 2, FACTION_PADDING, textColor);
 
     // Draw tabs
+    SDL_Rect storeTab = {
+        currentFaction->ui.contentRect.x,
+        FACTION_PADDING,
+        FACTION_TAB_WIDTH,
+        FACTION_TAB_HEIGHT
+    };
+    SDL_Rect questTab = {
+        currentFaction->ui.contentRect.x + FACTION_TAB_WIDTH + FACTION_PADDING,
+        FACTION_PADDING,
+        FACTION_TAB_WIDTH,
+        FACTION_TAB_HEIGHT
+    };
+
     drawButton("Store", storeTab, currentFaction->ui.isStoreTab);
     drawButton("Quests", questTab, !currentFaction->ui.isStoreTab);
 
-    // Draw current dialog
-    if (currentFaction->currentDialog)
-    {
-        renderText(currentFaction->currentDialog,
-                   currentFaction->ui.dialogRect.x + 10,
-                   currentFaction->ui.dialogRect.y + 10,
-                   textColor);
-    }
-
-    // Draw either store or quest content based on current tab
-    if (currentFaction->ui.isStoreTab)
-    {
+    // Draw current content
+    if (currentFaction->ui.isStoreTab) {
         drawFactionStore();
-    }
-    else
-    {
+    } else {
         drawFactionQuests();
     }
 
-    drawButton("Return", currentFaction->ui.returnButton,
-               currentFaction->ui.returnHovered);
+    // Draw dialog text
+    if (currentFaction->currentDialog) {
+        renderText(currentFaction->currentDialog,
+            currentFaction->ui.dialogRect.x + FACTION_PADDING,
+            currentFaction->ui.dialogRect.y + FACTION_PADDING,
+            textColor
+        );
+    }
+
+    // Draw return button
+    drawButton("Return", currentFaction->ui.returnButton, 
+        currentFaction->ui.returnHovered);
 }
 
-void handleFactionInput(void)
-{
+// Separate store drawing function for better organization
+void drawFactionStore(void) {
+    SDL_Color textColor = {255, 255, 255, 255};
+    SDL_Color lockedColor = {128, 128, 128, 255};
+
+    // Create content clip area
+    SDL_Rect clipRect = currentFaction->ui.contentRect;
+    SDL_RenderSetClipRect(renderer, &clipRect);
+
+    int startY = currentFaction->ui.contentRect.y - currentFaction->ui.scrollOffset;
+    int contentHeight = currentFaction->upgradeCount * 
+        (FACTION_ITEM_HEIGHT + FACTION_ITEM_SPACING) + FACTION_PADDING;
+
+    currentFaction->ui.maxScrollOffset = 
+        contentHeight - currentFaction->ui.contentRect.h;
+    if (currentFaction->ui.maxScrollOffset < 0) 
+        currentFaction->ui.maxScrollOffset = 0;
+
+    // Keep scroll in bounds
+    if (currentFaction->ui.scrollOffset > currentFaction->ui.maxScrollOffset)
+        currentFaction->ui.scrollOffset = currentFaction->ui.maxScrollOffset;
+    if (currentFaction->ui.scrollOffset < 0)
+        currentFaction->ui.scrollOffset = 0;
+
+    // Draw upgrades
+    for (int i = 0; i < currentFaction->upgradeCount; i++) {
+        FactionUpgrade *upgrade = &currentFaction->upgrades[i];
+        SDL_Rect upgradeRect = {
+            currentFaction->ui.contentRect.x + FACTION_PADDING,
+            startY + i * (FACTION_ITEM_HEIGHT + FACTION_ITEM_SPACING),
+            currentFaction->ui.contentRect.w - FACTION_PADDING * 2,
+            FACTION_ITEM_HEIGHT
+        };
+
+        // Only draw if visible
+        if (upgradeRect.y + upgradeRect.h >= currentFaction->ui.contentRect.y &&
+            upgradeRect.y <= currentFaction->ui.contentRect.y + 
+                currentFaction->ui.contentRect.h) {
+
+            SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+            SDL_RenderFillRect(renderer, &upgradeRect);
+
+            SDL_Color *color = currentFaction->playerRank >= upgrade->requiredRank
+                ? &textColor
+                : &lockedColor;
+
+            // Draw upgrade info
+            char levelText[128];
+            snprintf(levelText, sizeof(levelText), "%s (Level %d/%d)",
+                upgrade->name, upgrade->currentLevel, upgrade->maxLevel);
+            renderText(levelText, 
+                upgradeRect.x + FACTION_PADDING,
+                upgradeRect.y + FACTION_PADDING,
+                *color
+            );
+
+            renderText(upgrade->description,
+                upgradeRect.x + FACTION_PADDING,
+                upgradeRect.y + FACTION_PADDING * 3,
+                *color
+            );
+
+            // Draw costs
+            char costText[256];
+            int goldCost = upgrade->baseCost * (upgrade->currentLevel + 1);
+            char gemCosts[128] = "";
+            for (int j = 0; j < 5; j++) {
+                if (upgrade->gemCosts[j] > 0) {
+                    char gemText[32];
+                    const char *rarityNames[] = {
+                        "Common", "Uncommon", "Rare", "Epic", "Legendary"
+                    };
+                    snprintf(gemText, sizeof(gemText), "%d %s%s",
+                        upgrade->gemCosts[j],
+                        rarityNames[j],
+                        strlen(gemCosts) == 0 ? "" : ","
+                    );
+                    strcat(gemCosts, gemText);
+                }
+            }
+
+            // Draw costs text
+            snprintf(costText, sizeof(costText), "Cost: %d gold%s%s",
+                goldCost,
+                strlen(gemCosts) > 0 ? " + " : "",
+                gemCosts
+            );
+            renderText(costText,
+                upgradeRect.x + FACTION_PADDING,
+                upgradeRect.y + FACTION_PADDING * 5,
+                *color
+            );
+
+            // Draw rank requirement
+            char rankText[64];
+            snprintf(rankText, sizeof(rankText), "Requires Standing %d",
+                upgrade->requiredRank);
+            renderText(rankText,
+                upgradeRect.x + FACTION_PADDING,
+                upgradeRect.y + FACTION_PADDING * 7,
+                *color
+            );
+
+            // Draw buy button if available
+            if (currentFaction->playerRank >= upgrade->requiredRank &&
+                upgrade->currentLevel < upgrade->maxLevel) {
+
+                bool canAfford = (progress->totalCoins >= goldCost);
+                for (int j = 0; j < 5 && canAfford; j++) {
+                    if (upgrade->gemCosts[j] > 0 && 
+                        progress->gems[j] < upgrade->gemCosts[j]) {
+                        canAfford = false;
+                    }
+                }
+
+                SDL_Rect buyButton = {
+                    upgradeRect.x + upgradeRect.w - FACTION_BUTTON_WIDTH - FACTION_PADDING,
+                    upgradeRect.y + upgradeRect.h - FACTION_BUTTON_HEIGHT - FACTION_PADDING,
+                    FACTION_BUTTON_WIDTH,
+                    FACTION_BUTTON_HEIGHT
+                };
+
+                SDL_SetRenderDrawColor(renderer,
+                    canAfford ? 60 : 40,
+                    canAfford ? 60 : 40,
+                    canAfford ? 60 : 40,
+                    255
+                );
+                SDL_RenderFillRect(renderer, &buyButton);
+                renderText("Buy",
+                    buyButton.x + FACTION_PADDING,
+                    buyButton.y + FACTION_PADDING / 2,
+                    canAfford ? textColor : lockedColor
+                );
+            }
+        }
+    }
+
+    SDL_RenderSetClipRect(renderer, NULL);
+
+    // Draw scrollbar if needed
+    if (currentFaction->ui.maxScrollOffset > 0) {
+        int scrollbarHeight = currentFaction->ui.contentRect.h * 
+            (currentFaction->ui.contentRect.h / 
+            (float)(currentFaction->upgradeCount * 
+            (FACTION_ITEM_HEIGHT + FACTION_ITEM_SPACING)));
+
+        int scrollbarY = currentFaction->ui.contentRect.y +
+            (currentFaction->ui.scrollOffset * 
+            (currentFaction->ui.contentRect.h - scrollbarHeight) /
+            currentFaction->ui.maxScrollOffset);
+
+        SDL_Rect scrollbar = {
+            currentFaction->ui.contentRect.x + 
+                currentFaction->ui.contentRect.w - 4,
+            scrollbarY,
+            4,
+            scrollbarHeight
+        };
+
+        SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+        SDL_RenderFillRect(renderer, &scrollbar);
+    }
+}
+
+void handleFactionInput(void) {
     if (!currentFaction)
         return;
 
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
+    
+    // Convert window coordinates to virtual coordinates
+    int virtualMouseX, virtualMouseY;
+    windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
     // Check tab clicks
     SDL_Rect storeTab = {
         currentFaction->ui.contentRect.x,
-        currentFaction->ui.contentRect.y - 40,
-        100,
-        40};
+        FACTION_PADDING,
+        FACTION_TAB_WIDTH,
+        FACTION_TAB_HEIGHT
+    };
     SDL_Rect questTab = {
-        currentFaction->ui.contentRect.x + 110,
-        currentFaction->ui.contentRect.y - 40,
-        100,
-        40};
+        currentFaction->ui.contentRect.x + FACTION_TAB_WIDTH + FACTION_PADDING,
+        FACTION_PADDING,
+        FACTION_TAB_WIDTH,
+        FACTION_TAB_HEIGHT
+    };
 
-    currentFaction->ui.returnHovered = isMouseOverButton(mouseX, mouseY,
-                                                         currentFaction->ui.returnButton);
+    currentFaction->ui.returnHovered = isMouseOverButton(virtualMouseX, virtualMouseY,
+        currentFaction->ui.returnButton);
 
-    if (event.type == SDL_MOUSEBUTTONDOWN)
-    {
-        if (isMouseOverButton(mouseX, mouseY, storeTab))
-        {
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (isMouseOverButton(virtualMouseX, virtualMouseY, storeTab)) {
             currentFaction->ui.isStoreTab = true;
+            return;
         }
-        else if (isMouseOverButton(mouseX, mouseY, questTab))
-        {
+        else if (isMouseOverButton(virtualMouseX, virtualMouseY, questTab)) {
             currentFaction->ui.isStoreTab = false;
+            return;
         }
 
-        if (currentFaction->ui.returnHovered)
-        {
+        if (currentFaction->ui.returnHovered) {
             gameContext->currentState = STATE_HUB;
             currentFaction = NULL;
             return;
         }
     }
 
-    if (event.type == SDL_MOUSEWHEEL)
-    {
-        if (currentFaction && currentFaction->ui.isStoreTab)
-        {
-            int mouseX, mouseY;
-            SDL_GetMouseState(&mouseX, &mouseY);
-
+    // Handle scroll wheel
+    if (event.type == SDL_MOUSEWHEEL) {
+        if (currentFaction && currentFaction->ui.isStoreTab) {
             // Only scroll if mouse is over content area
-            if (mouseX >= currentFaction->ui.contentRect.x &&
-                mouseX <= currentFaction->ui.contentRect.x + currentFaction->ui.contentRect.w &&
-                mouseY >= currentFaction->ui.contentRect.y &&
-                mouseY <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h)
-            {
+            if (virtualMouseX >= currentFaction->ui.contentRect.x &&
+                virtualMouseX <= currentFaction->ui.contentRect.x + currentFaction->ui.contentRect.w &&
+                virtualMouseY >= currentFaction->ui.contentRect.y &&
+                virtualMouseY <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h) {
 
-                currentFaction->ui.scrollOffset -= event.wheel.y * 30; // Adjust 30 for scroll speed
+                currentFaction->ui.scrollOffset -= event.wheel.y * 8;
 
                 // Keep scroll offset in bounds
-                if (currentFaction->ui.scrollOffset < 0)
-                {
+                if (currentFaction->ui.scrollOffset < 0) {
                     currentFaction->ui.scrollOffset = 0;
                 }
-                if (currentFaction->ui.scrollOffset > currentFaction->ui.maxScrollOffset)
-                {
+                if (currentFaction->ui.scrollOffset > currentFaction->ui.maxScrollOffset) {
                     currentFaction->ui.scrollOffset = currentFaction->ui.maxScrollOffset;
                 }
             }
         }
     }
 
-    // Adjust the button click handling to account for scroll offset
-    if (event.type == SDL_MOUSEBUTTONDOWN && currentFaction->ui.isStoreTab)
-    {
-        int startY = currentFaction->ui.contentRect.y + 20 - currentFaction->ui.scrollOffset;
-        int itemHeight = 100;
+    // Handle upgrade purchases
+    if (event.type == SDL_MOUSEBUTTONDOWN && currentFaction->ui.isStoreTab) {
+        int startY = currentFaction->ui.contentRect.y - currentFaction->ui.scrollOffset;
 
-        for (int i = 0; i < currentFaction->upgradeCount; i++)
-        {
-            SDL_Rect buyButton = {
-                currentFaction->ui.contentRect.x + currentFaction->ui.contentRect.w - 120,
-                startY + (i * (itemHeight + 10)) + itemHeight - 35,
-                100,
-                25};
+        for (int i = 0; i < currentFaction->upgradeCount; i++) {
+            SDL_Rect upgradeRect = {
+                currentFaction->ui.contentRect.x + FACTION_PADDING,
+                startY + i * (FACTION_ITEM_HEIGHT + FACTION_ITEM_SPACING),
+                currentFaction->ui.contentRect.w - FACTION_PADDING * 2,
+                FACTION_ITEM_HEIGHT
+            };
 
-            // Only check buttons that are visible
-            if (buyButton.y + buyButton.h >= currentFaction->ui.contentRect.y &&
-                buyButton.y <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h)
-            {
+            // Only check if upgrade is visible
+            if (upgradeRect.y + upgradeRect.h >= currentFaction->ui.contentRect.y &&
+                upgradeRect.y <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h) {
 
-                if (isMouseOverButton(mouseX, mouseY, buyButton))
-                {
-                    if (purchaseUpgrade(currentFaction, i))
-                    {
-                        int upgradeId = i;
-                        if (currentFaction->type == FACTION_VANGUARD)
-                        {
-                            // Check if upgrade already exists
-                            int existingIndex = -1;
-                            for (int i = 0; i < progress->vanguardUpgrades.count; i++)
-                            {
-                                if (progress->vanguardUpgrades.upgrades[i].upgradeId == upgradeId)
-                                {
-                                    existingIndex = i;
-                                    break;
-                                }
-                            }
+                SDL_Rect buyButton = {
+                    upgradeRect.x + upgradeRect.w - FACTION_BUTTON_WIDTH - FACTION_PADDING,
+                    upgradeRect.y + upgradeRect.h - FACTION_BUTTON_HEIGHT - FACTION_PADDING,
+                    FACTION_BUTTON_WIDTH,
+                    FACTION_BUTTON_HEIGHT
+                };
 
-                            if (existingIndex >= 0)
-                            {
-                                progress->vanguardUpgrades.upgrades[existingIndex].currentLevel++;
-                            }
-                            else
-                            {
-                                SavedUpgrade newUpgrade = {
-                                    .upgradeId = upgradeId,
-                                    .currentLevel = 1};
-                                progress->vanguardUpgrades.upgrades[progress->vanguardUpgrades.count] = newUpgrade;
-                                progress->vanguardUpgrades.count++;
-                            }
-                        }
-                        else if (currentFaction->type == FACTION_CRIMSON_PATH)
-                        {
-                            // Check if upgrade already exists
-                            int existingIndex = -1;
-                            for (int i = 0; i < progress->crimsonUpgrades.count; i++)
-                            {
-                                if (progress->crimsonUpgrades.upgrades[i].upgradeId == upgradeId)
-                                {
-                                    existingIndex = i;
-                                    break;
-                                }
-                            }
-
-                            if (existingIndex >= 0)
-                            {
-                                progress->crimsonUpgrades.upgrades[existingIndex].currentLevel++;
-                            }
-                            else
-                            {
-                                SavedUpgrade newUpgrade = {
-                                    .upgradeId = upgradeId,
-                                    .currentLevel = 1};
-                                progress->crimsonUpgrades.upgrades[progress->crimsonUpgrades.count] = newUpgrade;
-                                progress->crimsonUpgrades.count++;
-                            }
-                        }
-                        saveProgress(saveSelectUI->selectedFile);
-                        printf("Upgrade purchased successfully!\n");
-                    }
+                if (isMouseOverButton(virtualMouseX, virtualMouseY, buyButton)) {
+                    handleUpgradePurchase(currentFaction, i);
                     break;
                 }
             }
@@ -293,162 +419,50 @@ void handleFactionInput(void)
     }
 }
 
-void drawFactionStore(void)
-{
-    if (!currentFaction)
-        return;
-
-    SDL_Color textColor = {255, 255, 255, 255};
-    SDL_Color lockedColor = {128, 128, 128, 255};
-
-    int itemHeight = 100; // Height of each upgrade item
-    int contentHeight = currentFaction->upgradeCount * (itemHeight + 10) + 30;
-    int visibleHeight = currentFaction->ui.contentRect.h;
-
-    // Calculate max scroll offset
-    currentFaction->ui.maxScrollOffset = contentHeight - visibleHeight;
-    if (currentFaction->ui.maxScrollOffset < 0)
-        currentFaction->ui.maxScrollOffset = 0;
-
-    // Keep scroll offset in bounds
-    if (currentFaction->ui.scrollOffset > currentFaction->ui.maxScrollOffset)
-    {
-        currentFaction->ui.scrollOffset = currentFaction->ui.maxScrollOffset;
-    }
-    if (currentFaction->ui.scrollOffset < 0)
-    {
-        currentFaction->ui.scrollOffset = 0;
-    }
-
-    // Create a clip rectangle for scrolling
-    SDL_Rect clipRect = currentFaction->ui.contentRect;
-    SDL_RenderSetClipRect(renderer, &clipRect);
-
-    int startY = currentFaction->ui.contentRect.y + 20 - currentFaction->ui.scrollOffset;
-
-    for (int i = 0; i < currentFaction->upgradeCount; i++)
-    {
-        FactionUpgrade *upgrade = &currentFaction->upgrades[i];
-        SDL_Rect upgradeRect = {
-            currentFaction->ui.contentRect.x + 10,
-            startY + (i * (itemHeight + 10)),
-            currentFaction->ui.contentRect.w - 20,
-            itemHeight};
-
-        // Only draw if the upgrade is visible
-        if (upgradeRect.y + upgradeRect.h >= currentFaction->ui.contentRect.y &&
-            upgradeRect.y <= currentFaction->ui.contentRect.y + currentFaction->ui.contentRect.h)
-        {
-
-            // Draw background
-            SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-            SDL_RenderFillRect(renderer, &upgradeRect);
-
-            // Draw name and level
-            char levelText[128];
-            snprintf(levelText, sizeof(levelText), "%s (Level %d/%d)",
-                     upgrade->name, upgrade->currentLevel, upgrade->maxLevel);
-
-            SDL_Color *color = (currentFaction->playerRank >= upgrade->requiredRank)
-                                   ? &textColor
-                                   : &lockedColor;
-
-            renderText(levelText, upgradeRect.x + 10, upgradeRect.y + 10, *color);
-
-            // Draw description
-            renderText(upgrade->description,
-                       upgradeRect.x + 10, upgradeRect.y + 30, *color);
-
-            // Draw costs
-            char costText[256];
-            int goldCost = upgrade->baseCost * (upgrade->currentLevel + 1);
-
-            // Build gem cost string
-            char gemCosts[128] = "";
-            for (int j = 0; j < 5; j++)
-            {
-                if (upgrade->gemCosts[j] > 0)
-                {
-                    char gemText[32];
-                    const char *rarityNames[] = {"Common", "Uncommon", "Rare", "Epic", "Legendary"};
-                    snprintf(gemText, sizeof(gemText), "%d %s%s",
-                             upgrade->gemCosts[j],
-                             rarityNames[j],
-                             (strlen(gemCosts) == 0) ? "" : ",");
-                    strcat(gemCosts, gemText);
+void handleUpgradePurchase(Faction* faction, int upgradeIndex) {
+    if (purchaseUpgrade(faction, upgradeIndex)) {
+        if (faction->type == FACTION_VANGUARD) {
+            // Check if upgrade already exists
+            int existingIndex = -1;
+            for (int i = 0; i < progress->vanguardUpgrades.count; i++) {
+                if (progress->vanguardUpgrades.upgrades[i].upgradeId == upgradeIndex) {
+                    existingIndex = i;
+                    break;
                 }
             }
 
-            // Combine gold and gem costs
-            snprintf(costText, sizeof(costText), "Cost: %d gold%s%s",
-                     goldCost,
-                     strlen(gemCosts) > 0 ? " + " : "",
-                     gemCosts);
-
-            renderText(costText, upgradeRect.x + 10, upgradeRect.y + 50, *color);
-
-            // Draw rank requirement
-            char rankText[64];
-            snprintf(rankText, sizeof(rankText), "Requires Rank %d",
-                     upgrade->requiredRank);
-            renderText(rankText, upgradeRect.x + 10, upgradeRect.y + 70, *color);
-
-            // Draw buy button if available
-            if (currentFaction->playerRank >= upgrade->requiredRank &&
-                upgrade->currentLevel < upgrade->maxLevel)
-            {
-
-                // Check if player can afford all costs
-                bool canAfford = (progress->totalCoins >= goldCost);
-                for (int j = 0; j < 5 && canAfford; j++)
-                {
-                    if (upgrade->gemCosts[j] > 0 && progress->gems[j] < upgrade->gemCosts[j])
-                    {
-                        canAfford = false;
-                    }
+            if (existingIndex >= 0) {
+                progress->vanguardUpgrades.upgrades[existingIndex].currentLevel++;
+            } else {
+                SavedUpgrade newUpgrade = {
+                    .upgradeId = upgradeIndex,
+                    .currentLevel = 1
+                };
+                progress->vanguardUpgrades.upgrades[progress->vanguardUpgrades.count] = newUpgrade;
+                progress->vanguardUpgrades.count++;
+            }
+        } else if (faction->type == FACTION_CRIMSON_PATH) {
+            // Check if upgrade already exists
+            int existingIndex = -1;
+            for (int i = 0; i < progress->crimsonUpgrades.count; i++) {
+                if (progress->crimsonUpgrades.upgrades[i].upgradeId == upgradeIndex) {
+                    existingIndex = i;
+                    break;
                 }
+            }
 
-                SDL_Rect buyButton = {
-                    upgradeRect.x + upgradeRect.w - 110,
-                    upgradeRect.y + upgradeRect.h - 30,
-                    100,
-                    25};
-
-                // SDL_Color buttonColor = canAfford ? textColor : lockedColor;
-                drawButton("Buy", buyButton, false); // We'll add hover state later
+            if (existingIndex >= 0) {
+                progress->crimsonUpgrades.upgrades[existingIndex].currentLevel++;
+            } else {
+                SavedUpgrade newUpgrade = {
+                    .upgradeId = upgradeIndex,
+                    .currentLevel = 1
+                };
+                progress->crimsonUpgrades.upgrades[progress->crimsonUpgrades.count] = newUpgrade;
+                progress->crimsonUpgrades.count++;
             }
         }
-    }
-
-    // Reset clip rectangle
-    SDL_RenderSetClipRect(renderer, NULL);
-
-    // Draw scrollbar if needed
-    if (currentFaction->ui.maxScrollOffset > 0)
-    {
-        int scrollbarHeight = visibleHeight * (visibleHeight / (float)contentHeight);
-        int scrollbarY = currentFaction->ui.contentRect.y +
-                         (currentFaction->ui.scrollOffset * (visibleHeight - scrollbarHeight) /
-                          currentFaction->ui.maxScrollOffset);
-
-        SDL_Rect scrollbar = {
-            currentFaction->ui.contentRect.x + currentFaction->ui.contentRect.w - 8,
-            scrollbarY,
-            4,
-            scrollbarHeight};
-
-        // Draw scrollbar background
-        SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-        SDL_Rect scrollbarBg = {
-            scrollbar.x,
-            currentFaction->ui.contentRect.y,
-            scrollbar.w,
-            visibleHeight};
-        SDL_RenderFillRect(renderer, &scrollbarBg);
-
-        // Draw scrollbar
-        SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
-        SDL_RenderFillRect(renderer, &scrollbar);
+        saveProgress(saveSelectUI->selectedFile);
     }
 }
 

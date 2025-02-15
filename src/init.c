@@ -55,3 +55,5 @@ Faction *crimsonFaction = NULL;
 Faction *currentFaction = NULL;
 
 bool isDev = false;
+
+RenderContext* renderCtx = NULL;

@@ -28,159 +28,176 @@ void initializeButton(MenuButton *button,
     }
 }
 
-void initMenu(void)
-{
-    // Load background
-    Texture *backgroundTexture = &uiTextures[0];
-    if (!backgroundTexture)
-        return;
-
+void initMenu(void) {
     // Calculate button positions (centered horizontally)
-    int startX = (WINDOW_WIDTH - (3 * BUTTON_WIDTH + 2 * BUTTON_SPACING)) / 2;
-    int buttonY = WINDOW_HEIGHT - BUTTON_HEIGHT - 50; // Bottom aligned
+    int startX = (VIRTUAL_WIDTH - (3 * MENU_BUTTON_WIDTH + 2 * MENU_BUTTON_SPACING)) / 2;
+    int buttonY = VIRTUAL_HEIGHT - MENU_BUTTON_HEIGHT - 20; // Bottom aligned with padding
 
     menuButtons = malloc(3 * sizeof(MenuButton));
 
     // Initialize the three main buttons
-    initializeButton(&menuButtons[0], "resource/public/ui/ui_btn_info.bmp",
-                     startX, buttonY, "info");
-    initializeButton(&menuButtons[1], "resource/public/ui/ui_btn_play.bmp",
-                     startX + BUTTON_WIDTH + BUTTON_SPACING, buttonY, "play");
-    initializeButton(&menuButtons[2], "resource/public/ui/ui_btn_settings.bmp",
-                     startX + (BUTTON_WIDTH + BUTTON_SPACING) * 2, buttonY, "settings");
+    initializeButton(&menuButtons[0], 
+        "resource/public/ui/ui_btn_info.bmp",
+        startX, 
+        buttonY, 
+        "info"
+    );
+
+    initializeButton(&menuButtons[1], 
+        "resource/public/ui/ui_btn_play.bmp",
+        startX + MENU_BUTTON_WIDTH + MENU_BUTTON_SPACING, 
+        buttonY, 
+        "play"
+    );
+
+    initializeButton(&menuButtons[2], 
+        "resource/public/ui/ui_btn_settings.bmp",
+        startX + (MENU_BUTTON_WIDTH + MENU_BUTTON_SPACING) * 2, 
+        buttonY, 
+        "settings"
+    );
+
+    // Update button rectangles for virtual resolution
+    for (int i = 0; i < 3; i++) {
+        menuButtons[i].rect.w = MENU_BUTTON_WIDTH;
+        menuButtons[i].rect.h = MENU_BUTTON_HEIGHT;
+    }
 }
 
 // In initHubInterface()
-void initHubInterface(void)
-{
+void initHubInterface(void) {
     hubInterface = malloc(sizeof(HubInterface));
 
     // Initialize player photo area (top-left corner)
     hubInterface->playerPhotoRect = (SDL_Rect){
-        20,  // x
-        20,  // y
-        200, // width
-        200  // height
+        HUB_PANEL_PADDING,
+        HUB_PANEL_PADDING,
+        HUB_PLAYER_PHOTO_SIZE,
+        HUB_PLAYER_PHOTO_SIZE
     };
 
     // Initialize stats area (below photo)
     hubInterface->statsRect = (SDL_Rect){
-        20,  // x
-        240, // y
-        200, // width
-        300  // height
+        HUB_PANEL_PADDING,
+        HUB_PANEL_PADDING * 2 + HUB_PLAYER_PHOTO_SIZE,
+        HUB_PLAYER_PHOTO_SIZE + HUB_PANEL_PADDING * 2,
+        HUB_STATS_HEIGHT
     };
 
     // Initialize gods meter (top center)
     hubInterface->godsRect = (SDL_Rect){
-        240, // x
-        20,  // y
-        400, // width
-        100  // height
+        (VIRTUAL_WIDTH - 200) / 2,
+        HUB_PANEL_PADDING,
+        200,
+        40
     };
 
     // Initialize resource display (top right)
     hubInterface->resourceRect = (SDL_Rect){
-        660, // x
-        20,  // y
-        300, // width
-        100  // height
+        VIRTUAL_WIDTH - 150 - HUB_PANEL_PADDING,
+        HUB_PANEL_PADDING,
+        150,
+        100
     };
 
     // Initialize quit button (top right corner)
     hubInterface->quitButton = (SDL_Rect){
-        WINDOW_WIDTH - 120, // x
-        20,                 // y
-        100,                // width
-        40                  // height
+        VIRTUAL_WIDTH - HUB_BUTTON_WIDTH - HUB_PANEL_PADDING,
+        HUB_PANEL_PADDING,
+        HUB_BUTTON_WIDTH,
+        HUB_BUTTON_HEIGHT
     };
 
     // Initialize play button (bottom right corner)
     hubInterface->playButton = (SDL_Rect){
-        WINDOW_WIDTH - 120, // x
-        WINDOW_HEIGHT - 60, // y
-        100,                // width
-        40                  // height
+        VIRTUAL_WIDTH - HUB_BUTTON_WIDTH - HUB_PANEL_PADDING,
+        VIRTUAL_HEIGHT - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+        HUB_BUTTON_WIDTH,
+        HUB_BUTTON_HEIGHT
     };
 
-    // Update banner initialization
-    int bannerWidth = 400;  // Make banners wider
-    int bannerHeight = 400; // And taller
-    int spacing = 40;
-    int startX = (WINDOW_WIDTH - (2 * bannerWidth + spacing)) / 2;
+    // Calculate banner positions (centered)
+    int bannersTotalWidth = 2 * HUB_BANNER_WIDTH + HUB_BANNER_SPACING;
+    int bannersStartX = (VIRTUAL_WIDTH - bannersTotalWidth) / 2;
+    int bannersY = (VIRTUAL_HEIGHT - HUB_BANNER_HEIGHT) / 2;
 
-    // Now only initialize 2 factions instead of 4
-    for (int i = 0; i < 2; i++)
-    {
+    // Initialize faction banners
+    for (int i = 0; i < 2; i++) {
         hubInterface->banners[i] = (Banner){
             .name = i == 0 ? "Sanctum Vanguard" : "The Crimson Path",
             .relationship = 0,
             .type = i == 0 ? FACTION_VANGUARD : FACTION_CRIMSON_PATH,
             .banner = NULL,
             .bannerRect = {
-                startX + i * (bannerWidth + spacing),
-                300, // Positioned lower
-                bannerWidth,
-                bannerHeight},
-            .isHovered = false};
+                bannersStartX + i * (HUB_BANNER_WIDTH + HUB_BANNER_SPACING),
+                bannersY,
+                HUB_BANNER_WIDTH,
+                HUB_BANNER_HEIGHT
+            },
+            .isHovered = false
+        };
     }
 
-    // Initialize hover states
     hubInterface->quitHovered = false;
     hubInterface->playHovered = false;
 }
 
-void drawMainMenu(void)
-{
-    // Draw background
-    SDL_RenderCopy(renderer, uiTextures[0].texture, NULL, &(SDL_Rect){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT});
+void drawMainMenu(void) {
+    // Draw background scaled to virtual resolution
+    SDL_Rect backgroundRect = {0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
+    SDL_RenderCopy(renderer, uiTextures[0].texture, NULL, &backgroundRect);
 
-    for (int i = 0; i < 3; i++)
-    {
-        switch (menuButtons[i].state)
-        {
-        case BUTTON_STATE_HOVER:
-            menuButtons[i].texture->currentFrame = 1;
-            break;
-        case BUTTON_STATE_CLICKED:
-            menuButtons[i].texture->currentFrame = 2;
-            break;
-        default:
-            menuButtons[i].texture->currentFrame = 0;
+    for (int i = 0; i < 3; i++) {
+        // Update frame based on button state
+        switch (menuButtons[i].state) {
+            case BUTTON_STATE_HOVER:
+                menuButtons[i].texture->currentFrame = 1;
+                break;
+            case BUTTON_STATE_CLICKED:
+                menuButtons[i].texture->currentFrame = 2;
+                break;
+            default:
+                menuButtons[i].texture->currentFrame = 0;
         }
 
         SDL_Rect spriteClip;
+        const Texture* buttonTexture = menuButtons[i].texture;
 
-        if (menuButtons[i].texture->alignment)
-        { // Vertical alignment
-            spriteClip.x = menuButtons[i].texture->clipRect.x;
-            spriteClip.y = menuButtons[i].texture->clipRect.y + menuButtons[i].texture->currentFrame * (menuButtons[i].texture->clipRect.h + menuButtons[i].texture->frameGap);
-            spriteClip.w = menuButtons[i].texture->clipRect.w;
-            spriteClip.h = menuButtons[i].texture->clipRect.h;
-        }
-        else
-        { // Horizontal alignment
-            spriteClip.x = menuButtons[i].texture->clipRect.x + menuButtons[i].texture->currentFrame * (menuButtons[i].texture->clipRect.w + menuButtons[i].texture->frameGap);
-            spriteClip.y = menuButtons[i].texture->clipRect.y;
-            spriteClip.w = menuButtons[i].texture->clipRect.w;
-            spriteClip.h = menuButtons[i].texture->clipRect.h;
+        if (buttonTexture->alignment) {
+            spriteClip.x = buttonTexture->clipRect.x;
+            spriteClip.y = buttonTexture->clipRect.y + 
+                buttonTexture->currentFrame * (buttonTexture->clipRect.h + buttonTexture->frameGap);
+            spriteClip.w = buttonTexture->clipRect.w;
+            spriteClip.h = buttonTexture->clipRect.h;
+        } else {
+            spriteClip.x = buttonTexture->clipRect.x + 
+                buttonTexture->currentFrame * (buttonTexture->clipRect.w + buttonTexture->frameGap);
+            spriteClip.y = buttonTexture->clipRect.y;
+            spriteClip.w = buttonTexture->clipRect.w;
+            spriteClip.h = buttonTexture->clipRect.h;
         }
 
-        SDL_RenderCopy(renderer, menuButtons[i].texture->texture, &spriteClip, &menuButtons[i].rect);
+        // Render the button with proper scaling
+        SDL_RenderCopy(renderer, 
+            buttonTexture->texture, 
+            &spriteClip, 
+            &menuButtons[i].rect
+        );
     }
 }
 
-void drawHubInterface(void)
-{
-    // Draw player photo
-    if (hubInterface->playerPhoto)
-    {
-        SDL_RenderCopy(renderer, hubInterface->playerPhoto, NULL, &hubInterface->playerPhotoRect);
-    }
+void drawHubInterface(void) {
+    // Draw background
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+    SDL_RenderFillRect(renderer, NULL);
 
-    // Draw stats
-    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+    // Draw player stats panel
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderFillRect(renderer, &hubInterface->statsRect);
+
+    // Draw player photo placeholder
+    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    SDL_RenderFillRect(renderer, &hubInterface->playerPhotoRect);
 
     // Draw gods meter
     SDL_RenderFillRect(renderer, &hubInterface->godsRect);
@@ -188,128 +205,143 @@ void drawHubInterface(void)
     // Draw resource display
     SDL_RenderFillRect(renderer, &hubInterface->resourceRect);
 
-    // Draw gems in resource display
+    // Draw resources
     SDL_Color textColor = {255, 255, 255, 255};
-    char gemText[64];
-    int gemY = hubInterface->resourceRect.y + 10;
-    for (int i = 0; i < 5; i++)
-    {
-        snprintf(gemText, sizeof(gemText), "Gem %d: %d", i + 1, progress->gems[i]);
-        renderText(gemText, hubInterface->resourceRect.x + 10, gemY, textColor);
-        gemY += 20;
+    char resourceText[32];
+    int resourceY = hubInterface->resourceRect.y + HUB_PANEL_PADDING;
+    
+    snprintf(resourceText, sizeof(resourceText), "Gold: %d", progress->totalCoins);
+    renderText(resourceText, 
+        hubInterface->resourceRect.x + HUB_PANEL_PADDING,
+        resourceY,
+        textColor
+    );
+    
+    for (int i = 0; i < 5; i++) {
+        resourceY += 16;
+        const char* gemTypes[] = {"Common", "Uncommon", "Rare", "Epic", "Legendary"};
+        snprintf(resourceText, sizeof(resourceText), "%s: %d", gemTypes[i], progress->gems[i]);
+        renderText(resourceText,
+            hubInterface->resourceRect.x + HUB_PANEL_PADDING,
+            resourceY,
+            textColor
+        );
     }
 
-    for (int i = 0; i < 2; i++)
-    {
-        Banner *banner = &hubInterface->banners[i];
+    // Draw faction banners
+    for (int i = 0; i < 2; i++) {
+        Banner* banner = &hubInterface->banners[i];
         SDL_Rect bannerRect = banner->bannerRect;
 
         // Draw banner background with hover effect
-        if (banner->isHovered)
-        {
-            SDL_SetRenderDrawColor(renderer, 70, 70, 100, 255);
-        }
-        else
-        {
-            SDL_SetRenderDrawColor(renderer, 50, 50, 70, 255);
-        }
+        SDL_SetRenderDrawColor(renderer,
+            banner->isHovered ? 70 : 50,
+            banner->isHovered ? 70 : 50,
+            banner->isHovered ? 100 : 70,
+            255
+        );
         SDL_RenderFillRect(renderer, &bannerRect);
 
-        // Draw banner name
+        // Draw faction name
         renderText(banner->name,
-                   bannerRect.x + (bannerRect.w - strlen(banner->name) * 10) / 2,
-                   bannerRect.y + 20,
-                   textColor);
+            bannerRect.x + HUB_PANEL_PADDING,
+            bannerRect.y + HUB_PANEL_PADDING,
+            textColor
+        );
 
         // Draw relationship status
         char relationText[32];
-        snprintf(relationText, sizeof(relationText), "Relationship: %d",
-                 banner->relationship);
+        snprintf(relationText, sizeof(relationText), "Standing: %d",
+            banner->relationship);
         renderText(relationText,
-                   bannerRect.x + (bannerRect.w - strlen(relationText) * 10) / 2,
-                   bannerRect.y + 50,
-                   textColor);
+            bannerRect.x + HUB_PANEL_PADDING,
+            bannerRect.y + HUB_PANEL_PADDING * 3,
+            textColor
+        );
 
-        // Draw faction-specific info
-        if (banner->type == FACTION_VANGUARD)
-        {
-            renderText("Discipline. Order. Protection.",
-                       bannerRect.x + 20,
-                       bannerRect.y + 90,
-                       textColor);
-            renderText("Military precision meets divine purpose",
-                       bannerRect.x + 20,
-                       bannerRect.y + 120,
-                       textColor);
-        }
-        else
-        {
-            renderText("Evolution. Power. Freedom.",
-                       bannerRect.x + 20,
-                       bannerRect.y + 90,
-                       textColor);
-            renderText("Embrace the forest's gifts",
-                       bannerRect.x + 20,
-                       bannerRect.y + 120,
-                       textColor);
-        }
+        // Draw faction description
+        const char* description = (i == 0) ?
+            "Discipline. Order. Protection." :
+            "Evolution. Power. Freedom.";
+        renderText(description,
+            bannerRect.x + HUB_PANEL_PADDING,
+            bannerRect.y + bannerRect.h - HUB_PANEL_PADDING * 4,
+            textColor
+        );
 
         // Draw "Enter" button at bottom of banner
         SDL_Rect enterButton = {
-            bannerRect.x + (bannerRect.w - 100) / 2,
-            bannerRect.y + bannerRect.h - 60,
-            100,
-            40};
+            bannerRect.x + (bannerRect.w - HUB_BUTTON_WIDTH) / 2,
+            bannerRect.y + bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+            HUB_BUTTON_WIDTH,
+            HUB_BUTTON_HEIGHT
+        };
         drawButton("Enter", enterButton, banner->isHovered);
     }
 
-    // Draw quit button
+    // Draw quit and play buttons
     drawButton("Quit", hubInterface->quitButton, hubInterface->quitHovered);
-
-    // Draw play button
     drawButton("Play", hubInterface->playButton, hubInterface->playHovered);
 }
 
 // Add handleHubInput function
-void handleHubInput(void)
-{
+void handleHubInput(void) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
-
-    for (int i = 0; i < 2; i++)
-    {
-        Banner *banner = &hubInterface->banners[i];
-        banner->isHovered = isMouseOverButton(mouseX, mouseY, banner->bannerRect);
-    }
+    
+    // Convert window coordinates to virtual coordinates
+    int virtualMouseX, virtualMouseY;
+    windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
     // Update button hover states
-    hubInterface->quitHovered = isMouseOverButton(mouseX, mouseY, hubInterface->quitButton);
-    hubInterface->playHovered = isMouseOverButton(mouseX, mouseY, hubInterface->playButton);
+    hubInterface->quitHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        hubInterface->quitButton);
+    hubInterface->playHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        hubInterface->playButton);
 
-    if (event.type == SDL_MOUSEBUTTONDOWN)
-    {
-        // Check fraction banner clicks
-        for (int i = 0; i < 2; i++)
-        {
-            if (hubInterface->banners[i].isHovered)
-            {
-                gameContext->currentState = STATE_FRACTION;
-                switchToFaction(hubInterface->banners[i].type);
-                break;
+    // Update banner hover states
+    for (int i = 0; i < 2; i++) {
+        Banner *banner = &hubInterface->banners[i];
+        banner->isHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+            banner->bannerRect);
+    }
+
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        // Handle faction banner clicks
+        for (int i = 0; i < 2; i++) {
+            if (hubInterface->banners[i].isHovered) {
+                // Only handle click if it's within the enter button area
+                SDL_Rect enterButton = {
+                    hubInterface->banners[i].bannerRect.x + 
+                        (hubInterface->banners[i].bannerRect.w - HUB_BUTTON_WIDTH) / 2,
+                    hubInterface->banners[i].bannerRect.y + 
+                        hubInterface->banners[i].bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+                    HUB_BUTTON_WIDTH,
+                    HUB_BUTTON_HEIGHT
+                };
+                
+                if (isMouseOverButton(virtualMouseX, virtualMouseY, enterButton)) {
+                    gameContext->currentState = STATE_FRACTION;
+                    switchToFaction(hubInterface->banners[i].type);
+                    return;
+                }
             }
         }
 
-        if (hubInterface->quitHovered)
-        {
+        // Handle quit button
+        if (hubInterface->quitHovered) {
             gameContext->currentState = STATE_MAIN_MENU;
+            return;
         }
-        else if (hubInterface->playHovered)
-        {
+
+        // Handle play button
+        if (hubInterface->playHovered) {
             gameContext->currentState = STATE_GAMEPLAY;
             turn = 0;
             createPlayer(&heroTextures[0]);
             initGrid(5, 5);
             populateGrid();
+            return;
         }
     }
 }
@@ -364,27 +396,24 @@ void drawGameOver(void)
                isMouseOverButton(mouseX, mouseY, toTownRect));
 }
 
-void handleMenuInput(void)
-{
+void handleMenuInput(void) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
+    
+    // Convert window coordinates to virtual coordinates
+    int virtualMouseX, virtualMouseY;
+    windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
     // Handle mouse movement for hover states
-    if (event.type == SDL_MOUSEMOTION)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            if (SDL_PointInRect(&(SDL_Point){mouseX, mouseY}, &menuButtons[i].rect))
-            {
-                if (menuButtons[i].state != BUTTON_STATE_CLICKED)
-                {
+    if (event.type == SDL_MOUSEMOTION) {
+        for (int i = 0; i < 3; i++) {
+            SDL_Point virtualPoint = {virtualMouseX, virtualMouseY};
+            if (SDL_PointInRect(&virtualPoint, &menuButtons[i].rect)) {
+                if (menuButtons[i].state != BUTTON_STATE_CLICKED) {
                     menuButtons[i].state = BUTTON_STATE_HOVER;
                 }
-            }
-            else
-            {
-                if (menuButtons[i].state != BUTTON_STATE_CLICKED)
-                {
+            } else {
+                if (menuButtons[i].state != BUTTON_STATE_CLICKED) {
                     menuButtons[i].state = BUTTON_STATE_NORMAL;
                 }
             }
@@ -392,33 +421,19 @@ void handleMenuInput(void)
     }
 
     // Handle mouse clicks
-    if (event.type == SDL_MOUSEBUTTONDOWN)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            if (SDL_PointInRect(&(SDL_Point){mouseX, mouseY}, &menuButtons[i].rect))
-            {
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        for (int i = 0; i < 3; i++) {
+            SDL_Point virtualPoint = {virtualMouseX, virtualMouseY};
+            if (SDL_PointInRect(&virtualPoint, &menuButtons[i].rect)) {
                 menuButtons[i].state = BUTTON_STATE_CLICKED;
 
                 // Handle button actions
-                if (strcmp(menuButtons[i].identifier, "play") == 0)
-                {
+                if (strcmp(menuButtons[i].identifier, "play") == 0) {
                     gameContext->currentState = STATE_SAVE_SELECT;
                     initSaveSelectUI();
-                    // turn = 0;
-                    // createPlayer(&heroTextures[0]);
-                    // printf("Player melee damage: %d\n", player->attack.meleeDamage);
-                    // //applyUpgrades(player, progress);
-                    // printf("Player melee damage: %d\n", player->attack.meleeDamage);
-                    // initGrid(5, 5);
-                    // populateGrid(grid, player);
-                }
-                else if (strcmp(menuButtons[i].identifier, "info") == 0)
-                {
+                } else if (strcmp(menuButtons[i].identifier, "info") == 0) {
                     gameContext->currentState = STATE_MAIN_MENU;
-                }
-                else if (strcmp(menuButtons[i].identifier, "settings") == 0)
-                {
+                } else if (strcmp(menuButtons[i].identifier, "settings") == 0) {
                     gameContext->currentState = STATE_MAIN_MENU;
                 }
             }
@@ -426,16 +441,13 @@ void handleMenuInput(void)
     }
 
     // Handle mouse button release
-    if (event.type == SDL_MOUSEBUTTONUP)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            if (menuButtons[i].state == BUTTON_STATE_CLICKED)
-            {
-                menuButtons[i].state = SDL_PointInRect(&(SDL_Point){mouseX, mouseY},
-                                                       &menuButtons[i].rect)
-                                           ? BUTTON_STATE_HOVER
-                                           : BUTTON_STATE_NORMAL;
+    if (event.type == SDL_MOUSEBUTTONUP) {
+        for (int i = 0; i < 3; i++) {
+            if (menuButtons[i].state == BUTTON_STATE_CLICKED) {
+                SDL_Point virtualPoint = {virtualMouseX, virtualMouseY};
+                menuButtons[i].state = SDL_PointInRect(&virtualPoint, &menuButtons[i].rect) 
+                    ? BUTTON_STATE_HOVER 
+                    : BUTTON_STATE_NORMAL;
             }
         }
     }
@@ -475,31 +487,37 @@ void handleGameOverInput(void)
     }
 }
 
-void initSaveSelectUI(void)
-{
+void initSaveSelectUI(void) {
     saveSelectUI = malloc(sizeof(SaveSelectUI));
     saveSelectUI->saveButtons = NULL;
     saveSelectUI->saveButtonCount = 0;
     saveSelectUI->selectedFile = NULL;
 
-    // Initialize buttons
+    // Calculate proper button positions for virtual resolution
+    int centerX = VIRTUAL_WIDTH / 2;
+    
+    // Initialize action buttons with proper scaling
+    // Position action buttons more compactly at the bottom
     saveSelectUI->newGameButton = (SDL_Rect){
-        WINDOW_WIDTH / 2 - 100,
-        WINDOW_HEIGHT - 150,
-        200,
-        40};
+        centerX - ACTION_BUTTON_WIDTH - SAVE_LIST_PADDING,
+        VIRTUAL_HEIGHT - ACTION_BUTTON_HEIGHT - SAVE_LIST_PADDING * 2,
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
+    };
 
     saveSelectUI->importButton = (SDL_Rect){
-        WINDOW_WIDTH / 2 - 100,
-        WINDOW_HEIGHT - 100,
-        200,
-        40};
+        centerX + SAVE_LIST_PADDING,
+        VIRTUAL_HEIGHT - ACTION_BUTTON_HEIGHT - SAVE_LIST_PADDING * 2,
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
+    };
 
     saveSelectUI->backButton = (SDL_Rect){
-        50,
-        WINDOW_HEIGHT - 100,
-        120,
-        40};
+        SAVE_LIST_PADDING * 2,
+        VIRTUAL_HEIGHT - ACTION_BUTTON_HEIGHT - SAVE_LIST_PADDING * 2,
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
+    };
 
     // Scan for save files
     scanSaveFiles();
@@ -510,54 +528,69 @@ void initSaveSelectUI(void)
     saveSelectUI->saveButtons = malloc(sizeof(SaveFileButton) * count);
     saveSelectUI->saveButtonCount = count;
 
-    for (int i = 0; i < count; i++)
-    {
+    // Calculate save list area dimensions
+    int listWidth = VIRTUAL_WIDTH * 0.6f;  // 60% of virtual width
+    int listStartX = (VIRTUAL_WIDTH - listWidth) / 2;
+    int listStartY = 40;  // Reduced space for title
+
+    for (int i = 0; i < count; i++) {
         saveSelectUI->saveButtons[i].rect = (SDL_Rect){
-            WINDOW_WIDTH / 2 - 200,
-            100 + i * 60,
-            400,
-            50};
+            listStartX,
+            listStartY + i * (SAVE_BUTTON_HEIGHT + SAVE_BUTTON_SPACING),
+            listWidth,
+            SAVE_BUTTON_HEIGHT
+        };
         saveSelectUI->saveButtons[i].info = saves[i];
         saveSelectUI->saveButtons[i].isHovered = false;
     }
 }
 
-void drawSaveSelectUI(void)
-{
+void drawSaveSelectUI(void) {
     // Draw semi-transparent background
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
-    SDL_RenderFillRect(renderer, &(SDL_Rect){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT});
+    SDL_RenderFillRect(renderer, &(SDL_Rect){0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT});
 
     // Draw title
     SDL_Color textColor = {255, 255, 255, 255};
-    renderText("Select Save File", WINDOW_WIDTH / 2 - 100, 50, textColor);
+    // Calculate text position to center it
+    renderText("Select Save File", 
+        (VIRTUAL_WIDTH - 80) / 2,  // Adjusted text width
+        12,  // Reduced top padding
+        textColor
+    );
 
     // Draw save file buttons
-    for (int i = 0; i < saveSelectUI->saveButtonCount; i++)
-    {
+    for (int i = 0; i < saveSelectUI->saveButtonCount; i++) {
         SaveFileButton *btn = &saveSelectUI->saveButtons[i];
 
         // Draw button background
         SDL_SetRenderDrawColor(renderer,
-                               btn->isHovered ? 100 : 70,
-                               btn->isHovered ? 100 : 70,
-                               btn->isHovered ? 100 : 70,
-                               255);
+            btn->isHovered ? 100 : 70,
+            btn->isHovered ? 100 : 70,
+            btn->isHovered ? 100 : 70,
+            255
+        );
         SDL_RenderFillRect(renderer, &btn->rect);
 
-        // Draw save file info
+        // Format save file info
         char info[256];
         time_t lastMod = btn->info.lastModified;
         struct tm *tm = localtime(&lastMod);
 
         snprintf(info, sizeof(info), "%s - Last played: %02d/%02d/%04d %02d:%02d - Coins: %d",
-                 btn->info.filename,
-                 tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1900,
-                 tm->tm_hour, tm->tm_min,
-                 btn->info.preview.totalCoins);
+            btn->info.filename,
+            tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1900,
+            tm->tm_hour, tm->tm_min,
+            btn->info.preview.totalCoins
+        );
 
-        renderText(info, btn->rect.x + 10, btn->rect.y + 15, textColor);
+        // Render text with proper vertical centering
+        renderText(info, 
+            btn->rect.x + SAVE_LIST_PADDING,
+            btn->rect.y + (SAVE_BUTTON_HEIGHT - 15) / 2,  // Center text vertically
+            textColor
+        );
     }
 
     // Draw action buttons
@@ -566,45 +599,42 @@ void drawSaveSelectUI(void)
     drawButton("Back", saveSelectUI->backButton, saveSelectUI->backHovered);
 }
 
-// Modify handleSaveSelectInput to handle delete functionality
-void handleSaveSelectInput(void)
-{
+void handleSaveSelectInput(void) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
+    
+    // Convert window coordinates to virtual coordinates
+    int virtualMouseX, virtualMouseY;
+    windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
     // Update hover states
-    saveSelectUI->newGameHovered = isMouseOverButton(mouseX, mouseY, saveSelectUI->newGameButton);
-    saveSelectUI->importHovered = isMouseOverButton(mouseX, mouseY, saveSelectUI->importButton);
-    saveSelectUI->backHovered = isMouseOverButton(mouseX, mouseY, saveSelectUI->backButton);
+    saveSelectUI->newGameHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        saveSelectUI->newGameButton);
+    saveSelectUI->importHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        saveSelectUI->importButton);
+    saveSelectUI->backHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        saveSelectUI->backButton);
 
-    for (int i = 0; i < saveSelectUI->saveButtonCount; i++)
-    {
-        saveSelectUI->saveButtons[i].isHovered =
-            isMouseOverButton(mouseX, mouseY, saveSelectUI->saveButtons[i].rect);
+    for (int i = 0; i < saveSelectUI->saveButtonCount; i++) {
+        saveSelectUI->saveButtons[i].isHovered = 
+            isMouseOverButton(virtualMouseX, virtualMouseY, 
+                saveSelectUI->saveButtons[i].rect);
     }
 
-    if (event.type == SDL_MOUSEBUTTONDOWN)
-    {
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT) {
             // Handle save file selection
-            for (int i = 0; i < saveSelectUI->saveButtonCount; i++)
-            {
-                if (saveSelectUI->saveButtons[i].isHovered)
-                {
-                    if (loadSave(saveSelectUI->saveButtons[i].info.filename))
-                    {
+            for (int i = 0; i < saveSelectUI->saveButtonCount; i++) {
+                if (saveSelectUI->saveButtons[i].isHovered) {
+                    if (loadSave(saveSelectUI->saveButtons[i].info.filename)) {
                         saveSelectUI->selectedFile = saveSelectUI->saveButtons[i].info.filename;
                         gameContext->currentState = STATE_HUB;
-
-                        if (isDev)
-                        {
+                        
+                        if (isDev) {
                             progress->totalCoins = 10000;
-                            progress->gems[0] = 100;
-                            progress->gems[1] = 100;
-                            progress->gems[2] = 100;
-                            progress->gems[3] = 100;
-                            progress->gems[4] = 100;
+                            for (int j = 0; j < 5; j++) {
+                                progress->gems[j] = 100;
+                            }
                         }
                     }
                     break;
@@ -612,38 +642,30 @@ void handleSaveSelectInput(void)
             }
 
             // Handle button clicks
-            if (saveSelectUI->newGameHovered)
-            {
+            if (saveSelectUI->newGameHovered) {
                 char filename[256];
                 time_t now = time(NULL);
-                strftime(filename, sizeof(filename), "save_%Y%m%d_%H%M%S.sav", localtime(&now));
+                strftime(filename, sizeof(filename), "save_%Y%m%d_%H%M%S.sav", 
+                    localtime(&now));
 
-                if (createNewSave(filename))
-                {
+                if (createNewSave(filename)) {
                     saveSelectUI->selectedFile = filename;
                     gameContext->currentState = STATE_HUB;
                 }
             }
-            else if (saveSelectUI->importHovered)
-            {
+            else if (saveSelectUI->importHovered) {
                 initFileBrowser();
                 scanDirectory();
             }
-            else if (saveSelectUI->backHovered)
-            {
+            else if (saveSelectUI->backHovered) {
                 gameContext->currentState = STATE_MAIN_MENU;
             }
         }
-        else if (event.button.button == SDL_BUTTON_RIGHT)
-        {
-            // Right-click for delete
-            for (int i = 0; i < saveSelectUI->saveButtonCount; i++)
-            {
-                if (saveSelectUI->saveButtons[i].isHovered)
-                {
-                    if (deleteSave(saveSelectUI->saveButtons[i].info.filename))
-                    {
-                        // Refresh the save selection UI
+        else if (event.button.button == SDL_BUTTON_RIGHT) {
+            // Handle save deletion
+            for (int i = 0; i < saveSelectUI->saveButtonCount; i++) {
+                if (saveSelectUI->saveButtons[i].isHovered) {
+                    if (deleteSave(saveSelectUI->saveButtons[i].info.filename)) {
                         cleanupSaveSelectUI();
                         initSaveSelectUI();
                     }

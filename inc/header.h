@@ -133,6 +133,14 @@ void shootProjectile(float startX, float startY, float targetX, float targetY, f
 
 // render.c ✅
 
+void initRenderContext(void);
+void updateRenderScale(void);
+void beginRender(void);
+void endRender(void);
+void windowToVirtual(int windowX, int windowY, int* virtualX, int* virtualY);
+void virtualToWindow(int virtualX, int virtualY, int* windowX, int* windowY);
+void destroyRenderContext(void);
+
 void drawButton(const char *text, SDL_Rect rect, bool isHovered);
 void renderText(const char *text, int x, int y, SDL_Color color);
 
@@ -180,6 +188,7 @@ void initCardAnimation(void);
 
 // Faction core functions
 void initFactions(void);
+void initFactionUI(Faction *faction);
 void switchToFaction(FactionType type);
 void updateFactionQuests(void);
 void checkQuestCompletion(Faction *faction);
@@ -192,6 +201,8 @@ void drawFactionDialog(void);
 void drawFactionStore(void);
 void drawFactionQuests(void);
 void updateFactionDialog(void);
+
+void handleUpgradePurchase(Faction* faction, int upgradeIndex);
 
 // Upgrade functions
 void initFactionUpgrades(Faction *faction);
@@ -206,3 +217,5 @@ void updateQuestCooldowns(void);
 void initMutations(void);
 void applyMutation(MutationType type);
 void updateMutationEffects(void);
+
+

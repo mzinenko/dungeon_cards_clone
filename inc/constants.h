@@ -40,6 +40,46 @@
 #define MAX_FACTION_QUESTS 15
 #define MAX_ACTIVE_QUESTS 2
 
+#define VIRTUAL_WIDTH 854
+#define VIRTUAL_HEIGHT 480
+#define VIRTUAL_SCALE 1  // Base scale for pixel art
+
+#define MENU_BUTTON_WIDTH 90   // Original button sprite is 248x248, scaled down for virtual resolution
+#define MENU_BUTTON_HEIGHT 90
+#define MENU_BUTTON_SPACING 10
+
+#define SAVE_BUTTON_HEIGHT 24
+#define SAVE_BUTTON_SPACING 4
+#define SAVE_LIST_PADDING 6
+#define ACTION_BUTTON_WIDTH 100
+#define ACTION_BUTTON_HEIGHT 24
+
+#define BROWSER_WIDTH (VIRTUAL_WIDTH * 0.8f)  // 70% of virtual width
+#define BROWSER_HEIGHT (VIRTUAL_HEIGHT * 0.9f)  // 75% of virtual height
+#define BROWSER_PADDING 4
+#define BROWSER_BUTTON_HEIGHT 24
+#define BROWSER_BUTTON_WIDTH 48
+#define FILE_ENTRY_HEIGHT 24
+#define FILE_ENTRY_SPACING 4
+
+#define HUB_BANNER_WIDTH 200
+#define HUB_BANNER_HEIGHT 180
+#define HUB_BANNER_SPACING 20
+#define HUB_BUTTON_WIDTH 60
+#define HUB_BUTTON_HEIGHT 20
+#define HUB_PANEL_PADDING 8
+#define HUB_STATS_HEIGHT 120
+#define HUB_PLAYER_PHOTO_SIZE 100
+
+#define FACTION_PADDING 8
+#define FACTION_BUTTON_WIDTH 60
+#define FACTION_BUTTON_HEIGHT 20
+#define FACTION_TAB_WIDTH 80
+#define FACTION_TAB_HEIGHT 24
+#define FACTION_DIALOG_HEIGHT 100
+#define FACTION_ITEM_HEIGHT 80
+#define FACTION_ITEM_SPACING 4
+
 // Existing enums
 typedef enum
 {

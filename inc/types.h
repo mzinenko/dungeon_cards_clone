@@ -634,3 +634,12 @@ static const FactionUpgrade crimsonUpgrades[MAX_FACTION_UPGRADES] = {
      .applyEffect = NULL}};
 
 extern bool isDev;
+
+typedef struct {
+    SDL_Texture* renderTarget;
+    float scaleX;
+    float scaleY;
+    SDL_Rect outputRect;  // For letterboxing
+} RenderContext;
+
+extern RenderContext *renderCtx;
