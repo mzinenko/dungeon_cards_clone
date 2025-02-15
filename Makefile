@@ -1,4 +1,4 @@
-NAME = dungeon_cards
+NAME = endgame
 
 CC = clang
 CFLAGS = -Wall -Wextra -Werror -I./inc -I./resource/framework/include
