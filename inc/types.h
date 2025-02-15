@@ -3,33 +3,39 @@
 
 #include <constants.h>
 
-typedef struct {
+typedef struct
+{
     int characterSelected;
-    int score;         
+    int score;
     GameState currentState;
 } GameContext;
 
-typedef struct {
+typedef struct
+{
     int upgradeId;
     int currentLevel;
 } SavedUpgrade;
 
-typedef struct {
+typedef struct
+{
     int totalCoins;
     int gems[5];
 
-    struct {
+    struct
+    {
         SavedUpgrade upgrades[MAX_FACTION_UPGRADES];
         int count;
     } vanguardUpgrades;
 
-    struct {
+    struct
+    {
         SavedUpgrade upgrades[MAX_FACTION_UPGRADES];
         int count;
     } crimsonUpgrades;
 } PlayerProgress;
 
-typedef struct {
+typedef struct
+{
     const char *name;
     const char *description;
     int baseCost;
@@ -37,7 +43,8 @@ typedef struct {
     void (*applyUpgrade)(void);
 } StoreItem;
 
-typedef struct {
+typedef struct
+{
     StoreItem *items;
     int itemCount;
     int selectedItem;
@@ -45,7 +52,8 @@ typedef struct {
     SDL_Rect backButton;
 } Store;
 
-typedef struct {
+typedef struct
+{
     char *texturePath;
     SDL_Texture *texture;
     SDL_Rect clipRect;
@@ -55,16 +63,17 @@ typedef struct {
     bool alignment;
 } Texture;
 
-typedef struct {
+typedef struct
+{
     int x;
     int y;
     int prevX;
     int prevY;
 
-
     bool isAlive;
 
-    struct {
+    struct
+    {
         int meleeDamage;
         int damage;
         int ammo;
@@ -74,15 +83,17 @@ typedef struct {
     } attack;
 
     // Defense-related properties
-    struct {
-        int hp;   
-        int maxHp; 
-        int armor; 
+    struct
+    {
+        int hp;
+        int maxHp;
+        int armor;
         ArmorType armorType;
         bool isInvulnerable;
     } defense;
 
-    struct {
+    struct
+    {
         int damage;
         int armor;
     } base;
@@ -92,7 +103,8 @@ typedef struct {
     int gems[5];
 
     // Animation data
-    struct {
+    struct
+    {
         float currentX;
         float currentY;
         float animationProgress;
@@ -102,21 +114,24 @@ typedef struct {
     } animation;
 
     // Rendering-related
-    Texture *texture; 
+    Texture *texture;
 } Player;
 
-typedef struct {
+typedef struct
+{
     CardType type;
     float weight;
 } CardWeight;
 
 // Card struct
-typedef struct Card {
-    char *id;       
-    CardType type;   
+typedef struct Card
+{
+    char *id;
+    CardType type;
     CardRarity rarity;
 
-    struct {
+    struct
+    {
         int damage;
         int range;
         int ammo;
@@ -124,7 +139,8 @@ typedef struct Card {
         float multiShotChance;
     } attack;
 
-    struct {
+    struct
+    {
         int hp;
         int maxHp;
         int armor;
@@ -133,11 +149,13 @@ typedef struct Card {
         bool isInvulnerable;
     } defense;
 
-    struct {
+    struct
+    {
         int x, y;
     } animation;
 
-    struct {
+    struct
+    {
         int value;
         float multiplier;
     } value;
@@ -157,7 +175,7 @@ typedef struct
     float currentX, currentY;
     float targetX, targetY;
     Card card;
-    float animationProgress; 
+    float animationProgress;
 } AnimatedCard;
 
 typedef struct
@@ -174,7 +192,7 @@ typedef struct
 {
     int rows;
     int cols;
-    Card **cells; 
+    Card **cells;
 } Grid;
 
 extern Texture *eventObserverTextures;
@@ -252,22 +270,25 @@ typedef void (*UpdateAnimationFunc)(struct Animation *animation, float deltaTime
 typedef void (*OnAnimationEndFunc)(struct Animation *animation);
 
 // Animation structure
-typedef struct Animation {
+typedef struct Animation
+{
     UpdateAnimationFunc updateAnimation;
-    OnAnimationEndFunc onAnimationEnd; 
+    OnAnimationEndFunc onAnimationEnd;
     bool isRunning;
     void *userData;
 } Animation;
 
 // Global animation manager
-typedef struct {
-    Animation *animations[MAX_ANIMATIONS]; 
-    int count; 
+typedef struct
+{
+    Animation *animations[MAX_ANIMATIONS];
+    int count;
 } AnimationManager;
 
 extern AnimationManager *animationManager;
 
-typedef struct {
+typedef struct
+{
     SDL_Rect rect;
     ButtonState state;
     Texture *texture;
@@ -285,26 +306,28 @@ typedef struct
     FactionType type;
     SDL_Texture *banner;
     SDL_Rect bannerRect;
-    bool isHovered; 
+    bool isHovered;
 } Banner;
 
 // New structure for hub interface
 // Update the HubInterface struct in types.h
-typedef struct {
+typedef struct
+{
     SDL_Rect playerPhotoRect;
     SDL_Rect statsRect;
     SDL_Rect godsRect;
     SDL_Rect resourceRect;
     SDL_Rect quitButton;
     SDL_Rect playButton;
-    bool quitHovered; 
-    bool playHovered; 
+    bool quitHovered;
+    bool playHovered;
     Banner banners[4];
     SDL_Texture *playerPhoto;
 } HubInterface;
 
 // Resource types for the resource display
-typedef enum {
+typedef enum
+{
     RESOURCE_GOLD,
     RESOURCE_GEM_COMMON,
     RESOURCE_GEM_RARE,
@@ -313,7 +336,8 @@ typedef enum {
 } ResourceType;
 
 // Resource structure
-typedef struct {
+typedef struct
+{
     ResourceType type;
     int amount;
     SDL_Texture *icon;
@@ -321,7 +345,8 @@ typedef struct {
 
 extern HubInterface *hubInterface;
 
-typedef struct {
+typedef struct
+{
     uint32_t magicNumber;
     uint32_t version;
     time_t timestamp;
@@ -329,7 +354,8 @@ typedef struct {
     uint32_t checksum;
 } SaveFileHeader;
 
-typedef struct {
+typedef struct
+{
     char filename[256];
     time_t lastModified;
     bool isValid;
@@ -339,13 +365,15 @@ typedef struct {
 extern SaveFileInfo saveFiles[MAX_SAVE_FILES];
 extern int numSaveFiles;
 
-typedef struct {
+typedef struct
+{
     SDL_Rect rect;
     SaveFileInfo info;
     bool isHovered;
 } SaveFileButton;
 
-typedef struct {
+typedef struct
+{
     SaveFileButton *saveButtons;
     int saveButtonCount;
     SDL_Rect newGameButton;
@@ -359,13 +387,15 @@ typedef struct {
 
 extern SaveSelectUI *saveSelectUI;
 
-typedef struct {
+typedef struct
+{
     char name[256];
     char fullPath[MAX_PATH_LENGTH];
     bool isDirectory;
 } FileEntry;
 
-typedef struct {
+typedef struct
+{
     FileEntry entries[MAX_FILE_ENTRIES];
     int entryCount;
     int currentPage;
@@ -389,19 +419,21 @@ typedef struct {
 
 extern FileBrowser *fileBrowser;
 
-typedef struct {
+typedef struct
+{
     const char *name;
     const char *description;
     int maxLevel;
     int currentLevel;
-    int baseCost;   
-    int gemCosts[5]; 
+    int baseCost;
+    int gemCosts[5];
     int requiredRank;
     ApplyOn applyOn;
     void (*applyEffect)(int currentLevel);
 } FactionUpgrade;
 
-typedef struct {
+typedef struct
+{
     const char *name;
     const char *description;
     bool isRepeatable;
@@ -414,7 +446,8 @@ typedef struct {
     void (*grantReward)(void);
 } FactionQuest;
 
-typedef struct {
+typedef struct
+{
     SDL_Rect leaderArtRect;
     SDL_Rect dialogRect;
     SDL_Rect contentRect;
@@ -422,11 +455,12 @@ typedef struct {
     bool isStoreTab;
     bool returnHovered;
     DialogState dialogState;
-    int scrollOffset;  
+    int scrollOffset;
     int maxScrollOffset;
 } FactionUI;
 
-typedef struct {
+typedef struct
+{
     FactionType type;
     const char *name;
     int playerRank;
@@ -441,7 +475,6 @@ typedef struct {
     const char *currentDialog;
 } Faction;
 
-
 extern Faction *vanguardFaction;
 extern Faction *crimsonFaction;
 extern Faction *currentFaction;
@@ -452,8 +485,9 @@ extern FactionUpgrade crimsonUpgrades[MAX_FACTION_UPGRADES];
 
 extern bool isDev;
 
-typedef struct {
-    SDL_Texture* renderTarget;
+typedef struct
+{
+    SDL_Texture *renderTarget;
     float scaleX;
     float scaleY;
     SDL_Rect outputRect;
@@ -461,5 +495,35 @@ typedef struct {
 
 extern RenderContext *renderCtx;
 
-#endif
+typedef struct
+{
+    char *path;
+    Mix_Chunk *sound;
+    int channel;
+    bool isPlaying;
+} Sound;
 
+typedef struct
+{
+    Sound sounds[MAX_SOUNDS];
+    int soundCount;
+    int musicVolume;
+    bool isMuted;
+} AudioManager;
+
+extern AudioManager *audioManager;
+
+typedef struct {
+    SDL_Rect volumeSlider;
+    SDL_Rect muteButton;
+    SDL_Rect backButton;
+    SDL_Rect volumeHandle;
+    bool isDraggingVolume;
+    bool isVolumeHovered;
+    bool isMuteHovered;
+    bool isBackHovered;
+} SettingsUI;
+
+extern SettingsUI *settingsUI;
+
+#endif

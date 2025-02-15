@@ -101,6 +101,12 @@
 #define GAME_OVER_BUTTON_WIDTH 60
 #define GAME_OVER_BUTTON_HEIGHT 25
 
+#define MAX_SOUNDS 32
+#define MUSIC_VOLUME_STEP 8
+#define DEFAULT_MUSIC_VOLUME 64
+
+#define SDL_INIT_FLAGS (SDL_INIT_VIDEO | SDL_INIT_AUDIO)
+
 // Existing enums
 typedef enum {
     MOVE_NONE,
@@ -154,6 +160,7 @@ typedef enum {
     STATE_FRACTION,    
     STATE_GAMEPLAY,
     STATE_GAME_OVER,
+    STATE_SETTINGS,
 } GameState;
 
 typedef enum {

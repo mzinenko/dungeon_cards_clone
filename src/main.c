@@ -7,7 +7,8 @@ int main(int argc, const char *argv[]) {
     printf("isDev: %d\n", isDev);
     printf("Starting initialization...\n");
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    // Initialize SDL with video and audio
+    if (SDL_Init(SDL_INIT_FLAGS) != 0) {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
         return 1;
     }
@@ -19,6 +20,10 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
     printf("TTF initialized successfully\n");
+
+    // Initialize audio system
+    initAudioManager();
+    printf("Audio system initialized\n");
 
     // Create window at initial size, but allow for resizing
     window = SDL_CreateWindow(
@@ -34,6 +39,7 @@ int main(int argc, const char *argv[]) {
     if (!renderer) {
         SDL_Log("Failed to create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
+        cleanupAudioManager();
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -48,6 +54,7 @@ int main(int argc, const char *argv[]) {
         SDL_Log("Failed to load font: %s", TTF_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
+        cleanupAudioManager();
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -65,6 +72,9 @@ int main(int argc, const char *argv[]) {
     initGameContext();
     initCardAnimation();
     initAnimationManager();
+
+    // Play startup sound
+    playSound("resource/music/startup.wav");
 
     Uint32 lastFrameTime = SDL_GetTicks();
     int running = 1;
@@ -100,6 +110,7 @@ int main(int argc, const char *argv[]) {
                     if (!player->isAlive) {
                         gameContext->currentState = STATE_GAME_OVER;
                         gameContext->score = player->gold;
+                        playSound("resource/music/game_over.wav");
                     }
                     handlePlayerInput(grid->rows, grid->cols);
                     handleQuitInput();
@@ -116,6 +127,9 @@ int main(int argc, const char *argv[]) {
                     break;
                 case STATE_HUB:
                     handleHubInput();
+                    break;
+                case STATE_SETTINGS:
+                    handleSettingsInput();
                     break;
                 case STATE_FRACTION:
                     handleFactionInput();
@@ -156,6 +170,9 @@ int main(int argc, const char *argv[]) {
                     drawFileBrowser();
                 }
                 break;
+            case STATE_SETTINGS:
+                drawSettingsUI();
+                break;
             case STATE_FRACTION:
                 drawFactionUI();
                 break;
@@ -168,6 +185,7 @@ int main(int argc, const char *argv[]) {
     }
 
     // Cleanup
+    cleanupAudioManager();
     destroyRenderContext();
     TTF_CloseFont(font);
     destroyPlayer();

@@ -451,7 +451,7 @@ void handleMenuInput(void) {
                 } else if (strcmp(menuButtons[i].identifier, "info") == 0) {
                     gameContext->currentState = STATE_MAIN_MENU;
                 } else if (strcmp(menuButtons[i].identifier, "settings") == 0) {
-                    gameContext->currentState = STATE_MAIN_MENU;
+                    gameContext->currentState = STATE_SETTINGS;
                 }
             }
         }
