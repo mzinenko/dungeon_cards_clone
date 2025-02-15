@@ -53,8 +53,7 @@ void drawPlayer(void) {
     };
 
     // Draw player cell background
-    SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
-    SDL_RenderFillRect(renderer, &playerRect);
+    SDL_RenderCopy(renderer, uiTextures[11].texture, NULL, &playerRect);
 
     // Only proceed if we have valid texture data
     if (!player->texture || !player->texture->texture)

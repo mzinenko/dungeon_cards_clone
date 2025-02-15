@@ -191,7 +191,14 @@ void drawHubInterface(void) {
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderFillRect(renderer, &hubInterface->statsRect);
 
-    // Draw player photo placeholder
+    SDL_Rect frameRect = {
+        hubInterface->playerPhotoRect.x - 5,
+        hubInterface->playerPhotoRect.y - 5,
+        hubInterface->playerPhotoRect.w + 10,
+        hubInterface->playerPhotoRect.h + 10
+    };
+    
+    SDL_RenderCopy(renderer, heroTextures[2].texture, NULL, &frameRect);
     SDL_RenderCopy(renderer, heroTextures[1].texture, NULL, &hubInterface->playerPhotoRect);
 
     // Draw gods meter

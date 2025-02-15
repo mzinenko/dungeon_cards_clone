@@ -145,6 +145,8 @@ typedef struct Card {
     void *customData;
     Texture *texture;
 
+    Texture *frameTexture;
+
     Uint32 lastFrameTime;
 } Card;
 

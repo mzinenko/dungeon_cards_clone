@@ -29,31 +29,41 @@ void drawCardContent(Card *card, SDL_Rect cardRect) {
         return;
 
     // Draw card background
+    if (!card->frameTexture || !card->frameTexture->texture) {
     SDL_Color cardColor;
     getCardColor(card, &cardColor);
     SDL_SetRenderDrawColor(renderer, cardColor.r, cardColor.g, cardColor.b, cardColor.a);
     SDL_RenderFillRect(renderer, &cardRect);
+    } else {
+        SDL_Rect cardFrameRect = {
+            cardRect.x - 2,
+            cardRect.y - 2,
+            cardRect.w + 4,
+            cardRect.h + 4
+        };
+        SDL_RenderCopy(renderer, card->frameTexture->texture, NULL, &cardFrameRect);
+    }
 
     // Draw card stats
     SDL_Color textColor = {255, 255, 255, 255};
     char statText[32];
-    int textY = cardRect.y + 2;
+    int textY = cardRect.y + 8;
 
     if (card->attack.damage > 0) {
         snprintf(statText, sizeof(statText), "DMG:%d", card->attack.damage);
-        renderText(statText, cardRect.x + 2, textY, textColor);
+        renderText(statText, cardRect.x + 8, textY, textColor);
         textY += 10;
     }
 
     if (card->attack.ammo > 0) {
         snprintf(statText, sizeof(statText), "AMO:%d", card->attack.ammo);
-        renderText(statText, cardRect.x + 2, textY, textColor);
+        renderText(statText, cardRect.x + 8, textY, textColor);
         textY += 10;
     }
 
     if (card->defense.armor > 0 || (card->defense.armor == 0 && card->type == CARD_ENEMY)) {
         snprintf(statText, sizeof(statText), "DEF:%d", card->defense.armor);
-        renderText(statText, cardRect.x + 2, textY, textColor);
+        renderText(statText, cardRect.x + 8, textY, textColor);
         textY += 10;
     }
 
@@ -72,7 +82,7 @@ void drawCardContent(Card *card, SDL_Rect cardRect) {
             statText[0] = '\0';
         }
         if (statText[0]) {
-            renderText(statText, cardRect.x + 2, textY, textColor);
+            renderText(statText, cardRect.x + 8, textY, textColor);
         }
     }
 
@@ -104,16 +114,16 @@ void drawCardContent(Card *card, SDL_Rect cardRect) {
 
         // Scale sprite to fit card while maintaining aspect ratio
         float scale = fminf(
-            (float)(cardRect.w - 20) / spriteClip.w,
-            (float)(cardRect.h - 20) / spriteClip.h
+            (float)(cardRect.w / 2.5) / spriteClip.w,
+            (float)(cardRect.h / 2.5) / spriteClip.h
         );
         
         int destW = (int)(spriteClip.w * scale);
         int destH = (int)(spriteClip.h * scale);
 
         SDL_Rect destRect = {
-            cardRect.x + (cardRect.w - destW) / 2,
-            cardRect.y + (cardRect.h - destH) / 2,
+            cardRect.x + cardRect.w - destW - 10,
+            cardRect.y + cardRect.h - destH - 10,
             destW,
             destH
         };
@@ -134,6 +144,7 @@ Card *createEmptyCard(void) {
         .id = NULL,
         .customData = NULL,
         .texture = NULL,
+        .frameTexture = NULL,
         .lastFrameTime = SDL_GetTicks()};
 
     return card;
@@ -164,29 +175,34 @@ Card *createCard(CardType type, CardRarity rarity) {
         card->defense.armor = frandomInRange(armorMin, armorMax);
         card->defense.maxArmor = card->defense.armor;
         card->texture = &enemyTextures[rand() % enemyTexturesCount];
+        card->frameTexture = &uiTextures[12];
         break;
     case CARD_WEAPON:
         card->attack.damage = frandomInRange(damageMin, damageMax);
         card->attack.range = rand() % 3 + 1;
         card->attack.ammo = rand() % 3 + 1;
         card->attack.critChance = frandomInRange(0.05f, 0.3f);
+        card->frameTexture = &uiTextures[13];
         break;
     case CARD_SHIELD:
     {
         int shieldArmor = frandomInRange(armorMin, armorMax);
         card->defense.armor = (shieldArmor > 0 ? shieldArmor : 1);
         card->defense.maxArmor = card->defense.armor;
+        card->frameTexture = &uiTextures[13];
         break;
     }
     case CARD_POTION:
         card->value.value = frandomInRange(1, 5);
         card->value.multiplier = frandomInRange(1.0f, 2.0f);
         card->texture = &potionTextures[rand() % potionTexturesCount];
+        card->frameTexture = &uiTextures[12];
         break;
     case CARD_COIN:
         card->value.value = frandomInRange(1, 10);
         card->value.multiplier = frandomInRange(1.0f, 2.0f); 
         card->texture = &coinTextures[card->rarity];  
+        card->frameTexture = &uiTextures[14];
         break;
     default:
         break;
