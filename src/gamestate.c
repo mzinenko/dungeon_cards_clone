@@ -230,22 +230,19 @@ void drawHubInterface(void) {
 
     // Draw faction banners
     for (int i = 0; i < 2; i++) {
-        Banner* banner = &hubInterface->banners[i];
+        Banner *banner = &hubInterface->banners[i];
         SDL_Rect bannerRect = banner->bannerRect;
 
-        // Draw banner background with hover effect
-        SDL_SetRenderDrawColor(renderer,
-            banner->isHovered ? 70 : 50,
-            banner->isHovered ? 70 : 50,
-            banner->isHovered ? 100 : 70,
-            255
-        );
-        SDL_RenderFillRect(renderer, &bannerRect);
+        // Draw banner texture
+        Texture *bannerTexture = &uiTextures[4 + i]; // Index 4 and 5 are the banner textures
+        if (bannerTexture->texture) {
+            SDL_RenderCopy(renderer, bannerTexture->texture, NULL, &bannerRect);
+        }
 
         // Draw faction name
         renderText(banner->name,
-            bannerRect.x + HUB_PANEL_PADDING,
-            bannerRect.y + HUB_PANEL_PADDING,
+            bannerRect.x + HUB_PANEL_PADDING * 1.5,
+            bannerRect.y + HUB_PANEL_PADDING * 1.5,
             textColor
         );
 
@@ -254,24 +251,14 @@ void drawHubInterface(void) {
         snprintf(relationText, sizeof(relationText), "Standing: %d",
             banner->relationship);
         renderText(relationText,
-            bannerRect.x + HUB_PANEL_PADDING,
-            bannerRect.y + HUB_PANEL_PADDING * 3,
-            textColor
-        );
-
-        // Draw faction description
-        const char* description = (i == 0) ?
-            "Discipline. Order. Protection." :
-            "Evolution. Power. Freedom.";
-        renderText(description,
-            bannerRect.x + HUB_PANEL_PADDING,
-            bannerRect.y + bannerRect.h - HUB_PANEL_PADDING * 4,
+            bannerRect.x + HUB_PANEL_PADDING * 1.5,
+            bannerRect.y + HUB_PANEL_PADDING * 4,
             textColor
         );
 
         // Draw "Enter" button at bottom of banner
         SDL_Rect enterButton = {
-            bannerRect.x + (bannerRect.w - HUB_BUTTON_WIDTH) / 2,
+            bannerRect.x + (bannerRect.w / 2 - HUB_BUTTON_WIDTH) / 2,
             bannerRect.y + bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
             HUB_BUTTON_WIDTH,
             HUB_BUTTON_HEIGHT
@@ -299,11 +286,20 @@ void handleHubInput(void) {
     hubInterface->playHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
         hubInterface->playButton);
 
-    // Update banner hover states
+            // Update banner hover states
     for (int i = 0; i < 2; i++) {
         Banner *banner = &hubInterface->banners[i];
+         SDL_Rect enterButton = {
+                    hubInterface->banners[i].bannerRect.x + 
+                        (hubInterface->banners[i].bannerRect.w / 2 - HUB_BUTTON_WIDTH) / 2,
+                    hubInterface->banners[i].bannerRect.y + 
+                        hubInterface->banners[i].bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+                    HUB_BUTTON_WIDTH,
+                    HUB_BUTTON_HEIGHT
+                };
+
         banner->isHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
-            banner->bannerRect);
+            enterButton);
     }
 
     if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -313,7 +309,7 @@ void handleHubInput(void) {
                 // Only handle click if it's within the enter button area
                 SDL_Rect enterButton = {
                     hubInterface->banners[i].bannerRect.x + 
-                        (hubInterface->banners[i].bannerRect.w - HUB_BUTTON_WIDTH) / 2,
+                        (hubInterface->banners[i].bannerRect.w / 2 - HUB_BUTTON_WIDTH) / 2,
                     hubInterface->banners[i].bannerRect.y + 
                         hubInterface->banners[i].bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
                     HUB_BUTTON_WIDTH,
