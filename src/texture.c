@@ -20,6 +20,7 @@ void initTextures(void)
     };
     static Texture _heroTextures[] = {
         {"resource/public/hero_guard.bmp", NULL, {0, 0, 40, 23}, 5, 0, 0, true},
+        {"resource/public/hero_icon.bmp", NULL, {0, 0, 32, 32}, 1, 0, 0, true},
     };
     static Texture _potionTextures[] = {
         {"resource/public/potion_heal_1.bmp", NULL, {0, 0, 32, 32}, 1, 0, 0, true},
@@ -35,6 +36,8 @@ void initTextures(void)
         {"resource/public/ui/ui_guild_1.bmp", NULL, {0, 0, 480, 270}, 1, 0, 0, true},
         {"resource/public/ui/ui_guild_2.bmp", NULL, {0, 0, 480, 270}, 1, 0, 0, true},  
         {"resource/public/ui/ui_button_small.bmp", NULL, {0, 0, 45, 15}, 3, 0, 1, false},
+        {"resource/public/ui/ui_bg_main.bmp", NULL, {0, 0, 0, 0}, 1, 0, 0, false},
+        {"resource/public/ui/ui_grid.bmp", NULL, {0, 0, 0, 0}, 1, 0, 0, false }
     };
 
     eventObserverTextures = _eventObserverTextures;

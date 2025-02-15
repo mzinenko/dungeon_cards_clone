@@ -131,6 +131,8 @@ int main(int argc, const char *argv[]) {
 
         // Begin rendering to virtual resolution
         beginRender();
+        SDL_Rect backgroundRect = {0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
+        SDL_RenderCopy(renderer, uiTextures[9].texture, NULL, &backgroundRect);
 
         // Render current state
         switch (gameContext->currentState) {

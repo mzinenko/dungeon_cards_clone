@@ -118,7 +118,7 @@ void initHubInterface(void) {
 
     // Calculate banner positions (centered)
     int bannersTotalWidth = 2 * HUB_BANNER_WIDTH + HUB_BANNER_SPACING;
-    int bannersStartX = (VIRTUAL_WIDTH - bannersTotalWidth) / 2;
+    int bannersStartX = (VIRTUAL_WIDTH - bannersTotalWidth) / 2 + HUB_PLAYER_PHOTO_SIZE / 2; 
     int bannersY = (VIRTUAL_HEIGHT - HUB_BANNER_HEIGHT) / 2;
 
     // Initialize faction banners
@@ -187,17 +187,12 @@ void drawMainMenu(void) {
 }
 
 void drawHubInterface(void) {
-    // Draw background
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderFillRect(renderer, NULL);
-
     // Draw player stats panel
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderFillRect(renderer, &hubInterface->statsRect);
 
     // Draw player photo placeholder
-    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    SDL_RenderFillRect(renderer, &hubInterface->playerPhotoRect);
+    SDL_RenderCopy(renderer, heroTextures[1].texture, NULL, &hubInterface->playerPhotoRect);
 
     // Draw gods meter
     SDL_RenderFillRect(renderer, &hubInterface->godsRect);
@@ -724,9 +719,6 @@ void cleanupSaveSelectUI(void)
 
 void drawGameplayUI(void) {
     // Begin rendering to virtual resolution
-    SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
-    SDL_RenderClear(renderer);
-
     renderEventObserver();
     drawGridWithAnimation();
     drawPlayerStats();

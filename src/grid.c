@@ -24,6 +24,14 @@ void drawGridBackground(void) {
     int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
     int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
+    SDL_Rect gridRect = {
+        gridX - 40,
+        gridY - 40,
+        GRID_VIRTUAL_SIZE + 80,
+        GRID_VIRTUAL_SIZE + 80
+    };
+    SDL_RenderCopy(renderer, uiTextures[10].texture, NULL, &gridRect);
+
     for (int i = 0; i < grid->rows; i++) {
         for (int j = 0; j < grid->cols; j++) {
             SDL_Rect cellRect = {
@@ -32,10 +40,6 @@ void drawGridBackground(void) {
                 CARD_VIRTUAL_SIZE,
                 CARD_VIRTUAL_SIZE
             };
-
-            // Draw cell background
-            SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
-            SDL_RenderFillRect(renderer, &cellRect);
 
             // Draw cell border
             SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
