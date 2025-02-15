@@ -56,3 +56,26 @@ bool purchaseUpgrade(Faction *faction, int upgradeIndex)
     upgrade->currentLevel++;
     return true;
 }
+
+void applyStartUpgrades(void) {
+    for (int i = 0; i <  progress->vanguardUpgrades.count; i++) {
+        int upgradeId = progress->vanguardUpgrades.upgrades[i].upgradeId;
+        if (upgradeId >= 0 && upgradeId < vanguardFaction->upgradeCount)
+        {
+            if (vanguardFaction->upgrades[upgradeId].applyOn == APPLY_ON_START && vanguardFaction->upgrades[upgradeId].applyEffect != NULL) {
+                vanguardFaction->upgrades[upgradeId].applyEffect(vanguardFaction->upgrades[upgradeId].currentLevel);
+            }
+        }
+    }
+
+    for (int i = 0; i < progress->crimsonUpgrades.count; i++)
+    {
+        int upgradeId = progress->crimsonUpgrades.upgrades[i].upgradeId;
+        if (upgradeId >= 0 && upgradeId < crimsonFaction->upgradeCount)
+        {
+            if (crimsonFaction->upgrades[upgradeId].applyOn == APPLY_ON_START && crimsonFaction->upgrades[upgradeId].applyEffect != NULL) {
+                crimsonFaction->upgrades[upgradeId].applyEffect(crimsonFaction->upgrades[upgradeId].currentLevel);
+            }
+        }
+    }
+}

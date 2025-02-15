@@ -20,25 +20,21 @@ void initGrid(int rows, int cols)
     }
 }
 
-void drawGridBackground(void)
-{
-    int gridWidth = grid->cols * CARD_SIZE;
-    int gridHeight = grid->rows * CARD_SIZE;
-    int gridX = (WINDOW_WIDTH - gridWidth) / 2;
-    int gridY = (WINDOW_HEIGHT - gridHeight) / 2;
+void drawGridBackground(void) {
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
-    for (int i = 0; i < grid->rows; i++)
-    {
-        for (int j = 0; j < grid->cols; j++)
-        {
+    for (int i = 0; i < grid->rows; i++) {
+        for (int j = 0; j < grid->cols; j++) {
             SDL_Rect cellRect = {
-                gridX + (j * CARD_SIZE),
-                gridY + (i * CARD_SIZE),
-                CARD_SIZE,
-                CARD_SIZE};
+                gridX + (j * CARD_VIRTUAL_SIZE),
+                gridY + (i * CARD_VIRTUAL_SIZE),
+                CARD_VIRTUAL_SIZE,
+                CARD_VIRTUAL_SIZE
+            };
 
             // Draw cell background
-            SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255); // Dark gray for empty
+            SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
             SDL_RenderFillRect(renderer, &cellRect);
 
             // Draw cell border
@@ -48,33 +44,24 @@ void drawGridBackground(void)
     }
 }
 
-void drawGrid(void)
-{
-    int gridWidth = grid->cols * CARD_SIZE;
-    int gridHeight = grid->rows * CARD_SIZE;
+void drawGrid(void) {
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
-    // Calculate grid position to center it
-    int gridX = (WINDOW_WIDTH - gridWidth) / 2;
-    int gridY = (WINDOW_HEIGHT - gridHeight) / 2;
-
-    for (int i = 0; i < grid->rows; i++)
-    {
-        for (int j = 0; j < grid->cols; j++)
-        {
+    for (int i = 0; i < grid->rows; i++) {
+        for (int j = 0; j < grid->cols; j++) {
             SDL_Rect cellRect = {
-                gridX + (j * CARD_SIZE),
-                gridY + (i * CARD_SIZE),
-                CARD_SIZE,
-                CARD_SIZE};
+                gridX + (j * CARD_VIRTUAL_SIZE),
+                gridY + (i * CARD_VIRTUAL_SIZE),
+                CARD_VIRTUAL_SIZE,
+                CARD_VIRTUAL_SIZE
+            };
 
             // Draw cell background
-            if (player->x == j && player->y == i)
-            {
-                SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255); // Player red
-            }
-            else
-            {
-                SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255); // Dark gray for empty
+            if (player->x == j && player->y == i) {
+                SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
             }
             SDL_RenderFillRect(renderer, &cellRect);
 
@@ -83,13 +70,13 @@ void drawGrid(void)
             SDL_RenderDrawRect(renderer, &cellRect);
 
             // Draw card if present
-            if (grid->cells[i][j].type != CARD_NONE)
-            {
+            if (grid->cells[i][j].type != CARD_NONE) {
                 SDL_Rect cardRect = {
-                    cellRect.x + 5,
-                    cellRect.y + 5,
-                    cellRect.w - 10,
-                    cellRect.h - 10};
+                    cellRect.x + 2,
+                    cellRect.y + 2,
+                    cellRect.w - 4,
+                    cellRect.h - 4
+                };
                 drawCardContent(&grid->cells[i][j], cardRect);
             }
         }
@@ -108,29 +95,27 @@ void initCardAnimation(void)
     cardAnim->direction = MOVE_NONE;
 }
 
-void startCardAnimation(MoveDirection direction)
-{
-    int gridX = (WINDOW_WIDTH - (grid->cols * CARD_SIZE)) / 2;
-    int gridY = (WINDOW_HEIGHT - (grid->rows * CARD_SIZE)) / 2;
+void startCardAnimation(MoveDirection direction) {
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
     // Count cards that need to move
     int count = 0;
-    switch (direction)
-    {
-    case MOVE_UP:
-        count = grid->rows - player->prevY - 1;
-        break;
-    case MOVE_DOWN:
-        count = player->prevY;
-        break;
-    case MOVE_LEFT:
-        count = grid->cols - player->prevX - 1;
-        break;
-    case MOVE_RIGHT:
-        count = player->prevX;
-        break;
-    default:
-        return;
+    switch (direction) {
+        case MOVE_UP:
+            count = grid->rows - player->prevY - 1;
+            break;
+        case MOVE_DOWN:
+            count = player->prevY;
+            break;
+        case MOVE_LEFT:
+            count = grid->cols - player->prevX - 1;
+            break;
+        case MOVE_RIGHT:
+            count = player->prevX;
+            break;
+        default:
+            return;
     }
 
     // Allocate animation data
@@ -142,66 +127,61 @@ void startCardAnimation(MoveDirection direction)
 
     // Setup animation data for each card
     int idx = 0;
-    switch (direction)
-    {
-    case MOVE_UP:
-        for (int i = player->prevY + 1; i < grid->rows; i++)
-        {
-            cardAnim->cards[idx].card = grid->cells[i][player->prevX];
-            cardAnim->cards[idx].startX = gridX + player->prevX * CARD_SIZE;
-            cardAnim->cards[idx].startY = gridY + i * CARD_SIZE;
-            cardAnim->cards[idx].targetX = gridX + player->prevX * CARD_SIZE;
-            cardAnim->cards[idx].targetY = gridY + (i - 1) * CARD_SIZE;
-            cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
-            cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
-            cardAnim->cards[idx].animationProgress = 0;
-            idx++;
-        }
-        break;
-    case MOVE_DOWN:
-        for (int i = player->prevY - 1; i >= 0; i--)
-        {
-            cardAnim->cards[idx].card = grid->cells[i][player->prevX];
-            cardAnim->cards[idx].startX = gridX + player->prevX * CARD_SIZE;
-            cardAnim->cards[idx].startY = gridY + i * CARD_SIZE;
-            cardAnim->cards[idx].targetX = gridX + player->prevX * CARD_SIZE;
-            cardAnim->cards[idx].targetY = gridY + (i + 1) * CARD_SIZE;
-            cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
-            cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
-            cardAnim->cards[idx].animationProgress = 0;
-            idx++;
-        }
-        break;
-    case MOVE_LEFT:
-        for (int i = player->prevX + 1; i < grid->cols; i++)
-        {
-            cardAnim->cards[idx].card = grid->cells[player->prevY][i];
-            cardAnim->cards[idx].startX = gridX + i * CARD_SIZE;
-            cardAnim->cards[idx].startY = gridY + player->prevY * CARD_SIZE;
-            cardAnim->cards[idx].targetX = gridX + (i - 1) * CARD_SIZE;
-            cardAnim->cards[idx].targetY = gridY + player->prevY * CARD_SIZE;
-            cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
-            cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
-            cardAnim->cards[idx].animationProgress = 0;
-            idx++;
-        }
-        break;
-    case MOVE_RIGHT:
-        for (int i = player->prevX - 1; i >= 0; i--)
-        {
-            cardAnim->cards[idx].card = grid->cells[player->prevY][i];
-            cardAnim->cards[idx].startX = gridX + i * CARD_SIZE;
-            cardAnim->cards[idx].startY = gridY + player->prevY * CARD_SIZE;
-            cardAnim->cards[idx].targetX = gridX + (i + 1) * CARD_SIZE;
-            cardAnim->cards[idx].targetY = gridY + player->prevY * CARD_SIZE;
-            cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
-            cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
-            cardAnim->cards[idx].animationProgress = 0;
-            idx++;
-        }
-        break;
-    default:
-        break;
+    switch (direction) {
+        case MOVE_UP:
+            for (int i = player->prevY + 1; i < grid->rows; i++) {
+                cardAnim->cards[idx].card = grid->cells[i][player->prevX];
+                cardAnim->cards[idx].startX = gridX + player->prevX * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].startY = gridY + i * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetX = gridX + player->prevX * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetY = gridY + (i - 1) * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
+                cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
+                cardAnim->cards[idx].animationProgress = 0;
+                idx++;
+            }
+            break;
+        case MOVE_DOWN:
+            for (int i = player->prevY - 1; i >= 0; i--) {
+                cardAnim->cards[idx].card = grid->cells[i][player->prevX];
+                cardAnim->cards[idx].startX = gridX + player->prevX * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].startY = gridY + i * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetX = gridX + player->prevX * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetY = gridY + (i + 1) * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
+                cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
+                cardAnim->cards[idx].animationProgress = 0;
+                idx++;
+            }
+            break;
+        case MOVE_LEFT:
+            for (int i = player->prevX + 1; i < grid->cols; i++) {
+                cardAnim->cards[idx].card = grid->cells[player->prevY][i];
+                cardAnim->cards[idx].startX = gridX + i * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].startY = gridY + player->prevY * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetX = gridX + (i - 1) * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetY = gridY + player->prevY * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
+                cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
+                cardAnim->cards[idx].animationProgress = 0;
+                idx++;
+            }
+            break;
+        case MOVE_RIGHT:
+            for (int i = player->prevX - 1; i >= 0; i--) {
+                cardAnim->cards[idx].card = grid->cells[player->prevY][i];
+                cardAnim->cards[idx].startX = gridX + i * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].startY = gridY + player->prevY * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetX = gridX + (i + 1) * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].targetY = gridY + player->prevY * CARD_VIRTUAL_SIZE;
+                cardAnim->cards[idx].currentX = cardAnim->cards[idx].startX;
+                cardAnim->cards[idx].currentY = cardAnim->cards[idx].startY;
+                cardAnim->cards[idx].animationProgress = 0;
+                idx++;
+            }
+            break;
+        default:
+            break;
     }
 }
 
@@ -235,78 +215,63 @@ void updateCardAnimation(float deltaTime)
     }
 }
 
-void drawGridWithAnimation(void)
-{
-    int gridWidth = grid->cols * CARD_SIZE;
-    int gridHeight = grid->rows * CARD_SIZE;
-    int gridX = (WINDOW_WIDTH - gridWidth) / 2;
-    int gridY = (WINDOW_HEIGHT - gridHeight) / 2;
+void drawGridWithAnimation(void) {
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
 
     // First draw the grid background
     drawGridBackground();
 
-    if (cardAnim->isAnimating)
-    {
+    if (cardAnim->isAnimating) {
         // During animation, only draw non-animated cards
-        for (int i = 0; i < grid->rows; i++)
-        {
-            for (int j = 0; j < grid->cols; j++)
-            {
+        for (int i = 0; i < grid->rows; i++) {
+            for (int j = 0; j < grid->cols; j++) {
                 // Skip the entire row/column being animated based on player's previous position
-                if (((cardAnim->direction == MOVE_LEFT && j >= player->x) || (cardAnim->direction == MOVE_RIGHT && j <= player->x)) && (player->y == i))
-                {
+                if (((cardAnim->direction == MOVE_LEFT && j >= player->x) || 
+                     (cardAnim->direction == MOVE_RIGHT && j <= player->x)) && 
+                    (player->y == i)) {
                     continue;
                 }
-                if (((cardAnim->direction == MOVE_UP && i >= player->y) || (cardAnim->direction == MOVE_DOWN && i <= player->y)) && (player->x == j))
-                {
+                if (((cardAnim->direction == MOVE_UP && i >= player->y) || 
+                     (cardAnim->direction == MOVE_DOWN && i <= player->y)) && 
+                    (player->x == j)) {
                     continue;
                 }
 
-                if (grid->cells[i][j].type != CARD_NONE)
-                {
+                if (grid->cells[i][j].type != CARD_NONE) {
                     SDL_Rect cardRect = {
-                        gridX + (j * CARD_SIZE) + 5,
-                        gridY + (i * CARD_SIZE) + 5,
-                        CARD_SIZE - 10,
-                        CARD_SIZE - 10};
+                        gridX + (j * CARD_VIRTUAL_SIZE) + 2,
+                        gridY + (i * CARD_VIRTUAL_SIZE) + 2,
+                        CARD_VIRTUAL_SIZE - 4,
+                        CARD_VIRTUAL_SIZE - 4
+                    };
                     drawCardContent(&grid->cells[i][j], cardRect);
                 }
             }
         }
 
         // Draw animated cards on top
-        for (int i = 0; i < cardAnim->cardCount; i++)
-        {
+        for (int i = 0; i < cardAnim->cardCount; i++) {
             SDL_Rect cellRect = {
-                (int)cardAnim->cards[i].currentX + 5,
-                (int)cardAnim->cards[i].currentY + 5,
-                CARD_SIZE - 10,
-                CARD_SIZE - 10};
+                (int)cardAnim->cards[i].currentX + 2,
+                (int)cardAnim->cards[i].currentY + 2,
+                CARD_VIRTUAL_SIZE - 4,
+                CARD_VIRTUAL_SIZE - 4
+            };
 
-            // Draw card background
-            SDL_Color cardColor;
-            getCardColor(&cardAnim->cards[i].card, &cardColor);
-            SDL_SetRenderDrawColor(renderer, cardColor.r, cardColor.g, cardColor.b, cardColor.a);
-            SDL_RenderFillRect(renderer, &cellRect);
-
-            // Draw card content
             drawCardContent(&cardAnim->cards[i].card, cellRect);
         }
-    }
-    else
-    {
+    } else {
         // When not animating, draw all cards normally
-        for (int i = 0; i < grid->rows; i++)
-        {
-            for (int j = 0; j < grid->cols; j++)
-            {
-                if (grid->cells[i][j].type != CARD_NONE)
-                {
+        for (int i = 0; i < grid->rows; i++) {
+            for (int j = 0; j < grid->cols; j++) {
+                if (grid->cells[i][j].type != CARD_NONE) {
                     SDL_Rect cardRect = {
-                        gridX + (j * CARD_SIZE) + 5,
-                        gridY + (i * CARD_SIZE) + 5,
-                        CARD_SIZE - 10,
-                        CARD_SIZE - 10};
+                        gridX + (j * CARD_VIRTUAL_SIZE) + 2,
+                        gridY + (i * CARD_VIRTUAL_SIZE) + 2,
+                        CARD_VIRTUAL_SIZE - 4,
+                        CARD_VIRTUAL_SIZE - 4
+                    };
                     drawCardContent(&grid->cells[i][j], cardRect);
                 }
             }

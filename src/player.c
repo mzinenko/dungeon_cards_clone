@@ -1,8 +1,9 @@
 #include "../inc/header.h"
 
-void createPlayer(Texture *texture)
-{
+
+void createPlayer(Texture *texture) {
     player = malloc(sizeof(Player));
+    
     // Initialize basic properties
     player->x = 2;
     player->y = 2;
@@ -10,6 +11,7 @@ void createPlayer(Texture *texture)
     player->prevY = 2;
     player->isAlive = true;
 
+    // Set up combat stats
     player->attack.meleeDamage = 1;
     player->attack.damage = 2;
     player->attack.range = 1;
@@ -25,82 +27,94 @@ void createPlayer(Texture *texture)
 
     player->gold = 0;
 
-    player->animation.currentX = player->x * CARD_SIZE + (WINDOW_WIDTH - 5 * CARD_SIZE) / 2;
-    player->animation.currentY = player->y * CARD_SIZE + (WINDOW_HEIGHT - 5 * CARD_SIZE) / 2;
+    player->base.damage = 0;
+    player->base.armor = 0;
+
+    // Initialize animation properties using virtual coordinates
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
+
+    player->animation.currentX = gridX + player->x * CARD_VIRTUAL_SIZE;
+    player->animation.currentY = gridY + player->y * CARD_VIRTUAL_SIZE;
     player->animation.animationProgress = 1.0f;
     player->animation.animationDuration = 0.3f;
     player->animation.isAnimating = false;
     player->animation.currentMove = MOVE_NONE;
 
-    // Load texture
-    if (texture)
-    {
-        player->texture = texture;
-    }
-    else
-    {
-        player->texture = NULL;
-    }
+    player->texture = texture;
 }
 
-void drawPlayer(void)
-{
+void drawPlayer(void) {
     SDL_Rect playerRect = {
         (int)player->animation.currentX,
         (int)player->animation.currentY,
-        CARD_SIZE,
-        CARD_SIZE};
+        CARD_VIRTUAL_SIZE,
+        CARD_VIRTUAL_SIZE
+    };
 
-    SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255); // Player red
+    // Draw player cell background
+    SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
     SDL_RenderFillRect(renderer, &playerRect);
 
-    if (!player || !player->texture || !player->texture->texture)
+    // Only proceed if we have valid texture data
+    if (!player->texture || !player->texture->texture)
         return;
 
     SDL_Rect spriteClip;
     const Texture *playerTexture = player->texture;
 
-    // Use the same logic as in `updatePlayerAnimation` to calculate the current frame
+    // Calculate animation frame
     static int frame = 0;
     static Uint32 lastFrameTime = 0;
     Uint32 currentTime = SDL_GetTicks();
 
-    if (currentTime - lastFrameTime > FRAME_DELAY)
-    {
+    if (currentTime - lastFrameTime > FRAME_DELAY) {
         frame = (frame + 1) % playerTexture->frameCount;
         lastFrameTime = currentTime;
     }
 
-    if (playerTexture->alignment)
-    { // Vertical alignment
+    // Get correct frame from sprite sheet
+    if (playerTexture->alignment) {
         spriteClip.x = playerTexture->clipRect.x;
-        spriteClip.y = playerTexture->clipRect.y + frame * (playerTexture->clipRect.h + playerTexture->frameGap);
+        spriteClip.y = playerTexture->clipRect.y + frame * 
+            (playerTexture->clipRect.h + playerTexture->frameGap);
         spriteClip.w = playerTexture->clipRect.w;
         spriteClip.h = playerTexture->clipRect.h;
-    }
-    else
-    { // Horizontal alignment
-        spriteClip.x = playerTexture->clipRect.x + frame * playerTexture->clipRect.w;
+    } else {
+        spriteClip.x = playerTexture->clipRect.x + frame * 
+            (playerTexture->clipRect.w + playerTexture->frameGap);
         spriteClip.y = playerTexture->clipRect.y;
         spriteClip.w = playerTexture->clipRect.w;
         spriteClip.h = playerTexture->clipRect.h;
     }
 
-    float destW = spriteClip.w * 2;
-    float destH = spriteClip.h * 2;
+    // Scale sprite to fit card while maintaining aspect ratio
+    float scale = fminf(
+        (float)(CARD_VIRTUAL_SIZE - 8) / spriteClip.w,
+        (float)(CARD_VIRTUAL_SIZE - 8) / spriteClip.h
+    );
+    
+    int destW = (int)(spriteClip.w * scale);
+    int destH = (int)(spriteClip.h * scale);
 
     SDL_Rect destRect = {
-        player->animation.currentX + (CARD_SIZE - 10 - destW) / 2,
-        player->animation.currentY + (CARD_SIZE - 10 - destH) / 2,
-        destW, destH};
+        playerRect.x + (CARD_VIRTUAL_SIZE - destW) / 2,
+        playerRect.y + (CARD_VIRTUAL_SIZE - destH) / 2,
+        destW,
+        destH
+    };
 
     SDL_RenderCopy(renderer, playerTexture->texture, &spriteClip, &destRect);
 }
 
-void drawPlayerStats(void)
-{
+void drawPlayerStats(void) {
     // Draw stats panel in top left corner
-    SDL_Rect statsPanel = {20, 20, 200, 200};
+    SDL_Rect statsPanel = {
+        STATS_TEXT_PADDING, 
+        STATS_TEXT_PADDING, 
+        STATS_PANEL_WIDTH, 
+        STATS_PANEL_HEIGHT
+    };
 
     // Semi-transparent background
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -111,64 +125,88 @@ void drawPlayerStats(void)
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     SDL_Color textColor = {255, 255, 255, 255};
-    char statText[32];
 
     // Draw HP bar
-    SDL_Rect hpBarBg = {30, 40, 180, 20};
+    SDL_Rect hpBarBg = {
+        statsPanel.x + STATS_TEXT_PADDING,
+        statsPanel.y + STATS_TEXT_PADDING * 3,
+        statsPanel.w - STATS_TEXT_PADDING * 2,
+        STATS_BAR_HEIGHT
+    };
     SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
     SDL_RenderFillRect(renderer, &hpBarBg);
 
-    SDL_Rect hpBarFg = {30, 40, (int)(180.0f * player->defense.hp / player->defense.maxHp), 20};
+    SDL_Rect hpBarFg = {
+        hpBarBg.x,
+        hpBarBg.y,
+        (int)(hpBarBg.w * ((float)player->defense.hp / player->defense.maxHp)),
+        hpBarBg.h
+    };
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &hpBarFg);
 
-    // Draw stats as text
+    // Draw stats text
+    int textY = statsPanel.y + STATS_BAR_HEIGHT + STATS_TEXT_PADDING * 4;
+    char statText[32];
+
     snprintf(statText, sizeof(statText), "HP: %d/%d", player->defense.hp, player->defense.maxHp);
-    renderText(statText, 30, 70, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
+    textY += 12;
 
     snprintf(statText, sizeof(statText), "Attack: %d", player->attack.damage);
-    renderText(statText, 30, 90, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
+    textY += 12;
 
     snprintf(statText, sizeof(statText), "Range: %d", player->attack.range);
-    renderText(statText, 30, 110, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
+    textY += 12;
 
     snprintf(statText, sizeof(statText), "Ammo: %d", player->attack.ammo);
-    renderText(statText, 30, 130, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
+    textY += 12;
 
     snprintf(statText, sizeof(statText), "Melee: %d", player->attack.meleeDamage);
-    renderText(statText, 30, 150, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
+    textY += 12;
 
     snprintf(statText, sizeof(statText), "Defense: %d", player->defense.armor);
-    renderText(statText, 30, 170, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
+    textY += 12;
 
     snprintf(statText, sizeof(statText), "Gold: %d", player->gold);
-    renderText(statText, 30, 190, textColor);
+    renderText(statText, statsPanel.x + STATS_TEXT_PADDING, textY, textColor);
 }
 
-void updatePlayerAnimation(float deltaTime)
-{
+void updatePlayerAnimation(float deltaTime) {
     if (!player->animation.isAnimating)
         return;
 
     player->animation.animationProgress += deltaTime / player->animation.animationDuration;
 
-    if (player->animation.animationProgress >= 1.0f)
-    {
+    if (player->animation.animationProgress >= 1.0f) {
         player->animation.animationProgress = 1.0f;
-        player->animation.isAnimating = 0;
-        // Snap to final position
-        player->animation.currentX = player->x * CARD_SIZE + (WINDOW_WIDTH - 5 * CARD_SIZE) / 2;
-        player->animation.currentY = player->y * CARD_SIZE + (WINDOW_HEIGHT - 5 * CARD_SIZE) / 2;
+        player->animation.isAnimating = false;
+
+        // Snap to final position using virtual coordinates
+        int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+        int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
+        player->animation.currentX = gridX + player->x * CARD_VIRTUAL_SIZE;
+        player->animation.currentY = gridY + player->y * CARD_VIRTUAL_SIZE;
         return;
     }
 
     // Calculate current position using smooth easing
-    float easedProgress = player->animation.animationProgress * player->animation.animationProgress * (3 - 2 * player->animation.animationProgress);
+    float easedProgress = player->animation.animationProgress * 
+        player->animation.animationProgress * 
+        (3 - 2 * player->animation.animationProgress);
 
-    float startX = player->prevX * CARD_SIZE + (WINDOW_WIDTH - 5 * CARD_SIZE) / 2;
-    float startY = player->prevY * CARD_SIZE + (WINDOW_HEIGHT - 5 * CARD_SIZE) / 2;
-    float targetX = player->x * CARD_SIZE + (WINDOW_WIDTH - 5 * CARD_SIZE) / 2;
-    float targetY = player->y * CARD_SIZE + (WINDOW_HEIGHT - 5 * CARD_SIZE) / 2;
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
+
+    float startX = gridX + player->prevX * CARD_VIRTUAL_SIZE;
+    float startY = gridY + player->prevY * CARD_VIRTUAL_SIZE;
+    float targetX = gridX + player->x * CARD_VIRTUAL_SIZE;
+    float targetY = gridY + player->y * CARD_VIRTUAL_SIZE;
 
     player->animation.currentX = startX + (targetX - startX) * easedProgress;
     player->animation.currentY = startY + (targetY - startY) * easedProgress;
@@ -301,14 +339,17 @@ bool canAttackEnemy(const int enemyX, int enemyY)
     return isInRange(player->x, player->y, enemyX, enemyY, player->attack.range);
 }
 
-void resetPlayerPosition(void)
-{
+void resetPlayerPosition(void) {
     player->x = 2;
     player->y = 2;
     player->prevX = 2;
     player->prevY = 2;
-    player->animation.currentX = player->x * CARD_SIZE + (WINDOW_WIDTH - 5 * CARD_SIZE) / 2;
-    player->animation.currentY = player->y * CARD_SIZE + (WINDOW_HEIGHT - 5 * CARD_SIZE) / 2;
+
+    int gridX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2;
+    int gridY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2;
+    
+    player->animation.currentX = gridX + player->x * CARD_VIRTUAL_SIZE;
+    player->animation.currentY = gridY + player->y * CARD_VIRTUAL_SIZE;
     player->animation.animationProgress = 1.0f;
     player->animation.isAnimating = false;
     player->animation.currentMove = MOVE_NONE;

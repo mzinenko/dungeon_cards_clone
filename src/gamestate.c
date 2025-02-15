@@ -339,6 +339,7 @@ void handleHubInput(void) {
             gameContext->currentState = STATE_GAMEPLAY;
             turn = 0;
             createPlayer(&heroTextures[0]);
+            applyStartUpgrades();
             initGrid(5, 5);
             populateGrid();
             return;
@@ -346,25 +347,21 @@ void handleHubInput(void) {
     }
 }
 
-void drawQuitButton(void)
-{
-    // Draw quit button in the right top corner
-    SDL_Rect quitRect = {WINDOW_WIDTH - 100, 20, 80, 50};
-    SDL_Color quitColor = {255, 255, 255, 255};
-    SDL_Color hoverColor = {255, 255, 0, 255};
-    SDL_Color color = quitColor;
+void drawQuitButton(void) {
+    SDL_Rect quitRect = {
+        VIRTUAL_WIDTH - FACTION_BUTTON_WIDTH - STATS_TEXT_PADDING,
+        STATS_TEXT_PADDING,
+        FACTION_BUTTON_WIDTH,
+        FACTION_BUTTON_HEIGHT
+    };
 
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
-    if (isMouseOverButton(mouseX, mouseY, quitRect))
-    {
-        color = hoverColor;
-    }
+    int virtualMouseX, virtualMouseY;
+    windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer, &quitRect);
-
-    renderText("Quit", WINDOW_WIDTH - 90, 25, (SDL_Color){0, 0, 0, 255});
+    bool isHovered = isMouseOverButton(virtualMouseX, virtualMouseY, quitRect);
+    drawButton("Quit", quitRect, isHovered);
 }
 
 void drawGameOver(void)
@@ -685,3 +682,16 @@ void cleanupSaveSelectUI(void)
         saveSelectUI = NULL;
     }
 }
+
+void drawGameplayUI(void) {
+    // Begin rendering to virtual resolution
+    SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
+    SDL_RenderClear(renderer);
+
+    renderEventObserver();
+    drawGridWithAnimation();
+    drawPlayerStats();
+    renderProjectiles();
+    drawQuitButton();
+}
+

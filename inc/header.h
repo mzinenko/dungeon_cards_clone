@@ -75,6 +75,8 @@ void handleGameOverInput(void);
 
 void cleanupSaveSelectUI(void);
 
+void drawGameplayUI(void);
+
 // generator.c
 
 CardWeight *calculateCardWeights(int *weightCount);
@@ -217,5 +219,10 @@ void updateQuestCooldowns(void);
 void initMutations(void);
 void applyMutation(MutationType type);
 void updateMutationEffects(void);
+
+void applyStartUpgrades(void);
+
+void applyCombatTraining(int currentLevel);
+void applyBallisticExpertise(int currentLevel);
 
 

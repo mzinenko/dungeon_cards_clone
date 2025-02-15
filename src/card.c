@@ -25,8 +25,7 @@ void initCard(Card *card)
     card->texture = NULL;
 }
 
-void drawCardContent(Card *card, SDL_Rect cardRect)
-{
+void drawCardContent(Card *card, SDL_Rect cardRect) {
     if (card->type == CARD_NONE)
         return;
 
@@ -36,105 +35,93 @@ void drawCardContent(Card *card, SDL_Rect cardRect)
     SDL_SetRenderDrawColor(renderer, cardColor.r, cardColor.g, cardColor.b, cardColor.a);
     SDL_RenderFillRect(renderer, &cardRect);
 
-    // Prepare text for card stats
+    // Draw card stats
     SDL_Color textColor = {255, 255, 255, 255};
     char statText[32];
+    int textY = cardRect.y + 2;
 
-    // Draw card stats as text
-    if (card->attack.damage > 0)
-    {
-        snprintf(statText, sizeof(statText), "DMG: %d", card->attack.damage);
-        renderText(statText,
-                   cardRect.x + 10, cardRect.y + 10, textColor);
+    if (card->attack.damage > 0) {
+        snprintf(statText, sizeof(statText), "DMG:%d", card->attack.damage);
+        renderText(statText, cardRect.x + 2, textY, textColor);
+        textY += 10;
     }
 
-    if (card->attack.ammo > 0)
-    {
-        snprintf(statText, sizeof(statText), "AMMO: %d", card->attack.ammo);
-        renderText(statText,
-                   cardRect.x + 10, cardRect.y + 30, textColor);
+    if (card->attack.ammo > 0) {
+        snprintf(statText, sizeof(statText), "AMO:%d", card->attack.ammo);
+        renderText(statText, cardRect.x + 2, textY, textColor);
+        textY += 10;
     }
 
-    if (card->attack.range > 0)
-    {
-        snprintf(statText, sizeof(statText), "RNG: %d", card->attack.range);
-        renderText(statText,
-                   cardRect.x + 10, cardRect.y + 50, textColor);
+    if (card->defense.armor > 0 || (card->defense.armor == 0 && card->type == CARD_ENEMY)) {
+        snprintf(statText, sizeof(statText), "DEF:%d", card->defense.armor);
+        renderText(statText, cardRect.x + 2, textY, textColor);
+        textY += 10;
     }
 
-    if (card->defense.armor > 0 || (card->defense.armor == 0 && card->type == CARD_ENEMY))
-    {
-        snprintf(statText, sizeof(statText), "DEF: %d", card->defense.armor);
-        renderText(statText,
-                   cardRect.x + 10, cardRect.y + 70, textColor);
-    }
-
-    if (card->value.value > 0 || card->defense.hp > 0)
-    {
-        switch (card->type)
-        {
+    if (card->value.value > 0 || card->defense.hp > 0) {
+        switch (card->type) {
         case CARD_POTION:
-            snprintf(statText, sizeof(statText), "HEAL: %d", card->value.value);
+            snprintf(statText, sizeof(statText), "HEAL:%d", card->value.value);
             break;
         case CARD_ENEMY:
-            snprintf(statText, sizeof(statText), "HP: %d", card->defense.hp);
+            snprintf(statText, sizeof(statText), "HP:%d", card->defense.hp);
             break;
         case CARD_COIN:
-            snprintf(statText, sizeof(statText), "GOLD: %d", card->value.value);
+            snprintf(statText, sizeof(statText), "GOLD:%d", card->value.value);
             break;
         default:
             statText[0] = '\0';
         }
-        if (statText[0])
-        {
-            renderText(statText,
-                       cardRect.x + 10, cardRect.y + 90, textColor);
+        if (statText[0]) {
+            renderText(statText, cardRect.x + 2, textY, textColor);
         }
     }
 
-    if (isTriggered(card))
-    {
-        SDL_Color exclamationColor = {255, 0, 0, 255}; // Red color
-        renderText("!", cardRect.x + cardRect.w - 15, cardRect.y + cardRect.h - 15, exclamationColor);
+    // Draw card sprite if available
+    if (card->texture && card->texture->texture) {
+        SDL_Rect spriteClip;
+        const Texture *cardTexture = card->texture;
+
+        static Uint32 lastFrameTime = 0;
+        Uint32 currentTime = SDL_GetTicks();
+
+        if (currentTime - lastFrameTime > FRAME_DELAY && cardTexture->frameCount > 1) {
+            card->texture->currentFrame = (card->texture->currentFrame + 1) % cardTexture->frameCount;
+            lastFrameTime = currentTime;
+        }
+
+        if (cardTexture->alignment) {
+            spriteClip.x = cardTexture->clipRect.x;
+            spriteClip.y = cardTexture->clipRect.y + card->texture->currentFrame * 
+                (cardTexture->clipRect.h + cardTexture->frameGap);
+            spriteClip.w = cardTexture->clipRect.w;
+            spriteClip.h = cardTexture->clipRect.h;
+        } else {
+            spriteClip.x = cardTexture->clipRect.x + card->texture->currentFrame * 
+                (cardTexture->clipRect.w + cardTexture->frameGap);
+            spriteClip.y = cardTexture->clipRect.y;
+            spriteClip.w = cardTexture->clipRect.w;
+            spriteClip.h = cardTexture->clipRect.h;
+        }
+
+        // Scale sprite to fit card while maintaining aspect ratio
+        float scale = fminf(
+            (float)(cardRect.w - 20) / spriteClip.w,
+            (float)(cardRect.h - 20) / spriteClip.h
+        );
+        
+        int destW = (int)(spriteClip.w * scale);
+        int destH = (int)(spriteClip.h * scale);
+
+        SDL_Rect destRect = {
+            cardRect.x + (cardRect.w - destW) / 2,
+            cardRect.y + (cardRect.h - destH) / 2,
+            destW,
+            destH
+        };
+
+        SDL_RenderCopy(renderer, cardTexture->texture, &spriteClip, &destRect);
     }
-
-    if (!card || !card->texture || !card->texture->texture)
-        return;
-
-    SDL_Rect spriteClip;
-    const Texture *cardTexture = card->texture;
-
-    static Uint32 lastFrameTime = 0;
-    Uint32 currentTime = SDL_GetTicks();
-
-    if (currentTime - lastFrameTime > FRAME_DELAY && cardTexture->frameCount > 1)
-    {
-        card->texture->currentFrame = (card->texture->currentFrame + 1) % cardTexture->frameCount;
-        lastFrameTime = currentTime;
-    }
-
-    if (cardTexture->alignment)
-    { // Vertical alignment
-        spriteClip.x = cardTexture->clipRect.x;
-        spriteClip.y = cardTexture->clipRect.y + card->texture->currentFrame * (cardTexture->clipRect.h + cardTexture->frameGap);
-        spriteClip.w = cardTexture->clipRect.w;
-        spriteClip.h = cardTexture->clipRect.h;
-    }
-    else
-    { // Horizontal alignment
-        spriteClip.x = cardTexture->clipRect.x + card->texture->currentFrame * (cardTexture->clipRect.w + cardTexture->frameGap);
-        spriteClip.y = cardTexture->clipRect.y;
-        spriteClip.w = cardTexture->clipRect.w;
-        spriteClip.h = cardTexture->clipRect.h;
-    }
-
-    float destW = spriteClip.w;
-    float destH = spriteClip.h;
-
-    // Render the animated sprite
-    SDL_Rect destRect = {cardRect.x + (CARD_SIZE - 20 - destW), cardRect.y + 10, destW, destH};
-
-    SDL_RenderCopy(renderer, cardTexture->texture, &spriteClip, &destRect);
 }
 
 Card *createEmptyCard(void)

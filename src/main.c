@@ -138,11 +138,7 @@ int main(int argc, const char *argv[]) {
                 drawMainMenu();
                 break;
             case STATE_GAMEPLAY:
-                renderEventObserver();
-                drawGridWithAnimation();
-                drawPlayerStats();
-                renderProjectiles();
-                drawQuitButton();
+                drawGameplayUI();
                 break;
             case STATE_GAME_OVER:
                 drawGrid();

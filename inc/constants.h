@@ -80,6 +80,13 @@
 #define FACTION_ITEM_HEIGHT 80
 #define FACTION_ITEM_SPACING 4
 
+#define GRID_VIRTUAL_SIZE 360   // Size of the whole grid in virtual resolution
+#define CARD_VIRTUAL_SIZE 72    // Size of each card in virtual resolution
+#define STATS_PANEL_WIDTH 120
+#define STATS_PANEL_HEIGHT 140
+#define STATS_BAR_HEIGHT 12
+#define STATS_TEXT_PADDING 4
+
 // Existing enums
 typedef enum
 {
@@ -195,3 +202,9 @@ typedef enum
     MUTATION_VENOM,
     MUTATION_BLOOD
 } MutationType;
+
+typedef enum 
+{
+    APPLY_ON_START,
+    APPLY_ON_NONE
+} ApplyOn;
