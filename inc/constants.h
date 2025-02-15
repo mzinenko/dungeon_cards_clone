@@ -1,3 +1,6 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -219,3 +222,5 @@ typedef enum
     APPLY_ON_START,
     APPLY_ON_NONE
 } ApplyOn;
+
+#endif

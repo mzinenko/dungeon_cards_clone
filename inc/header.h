@@ -1,3 +1,6 @@
+#ifndef HEADER_H
+#define HEADER_H
+
 #include "types.h"
 
 /*
@@ -225,4 +228,4 @@ void applyStartUpgrades(void);
 void applyCombatTraining(int currentLevel);
 void applyBallisticExpertise(int currentLevel);
 
-
+#endif

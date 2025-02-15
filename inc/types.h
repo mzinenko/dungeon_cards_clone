@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <constants.h>
 
 typedef struct
@@ -491,3 +494,6 @@ typedef struct {
 } RenderContext;
 
 extern RenderContext *renderCtx;
+
+#endif
+
