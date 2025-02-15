@@ -1,8 +1,6 @@
 #include "../inc/header.h"
 
-// Function to initialize faction upgrades
-void initFactionUpgrades(Faction *faction)
-{
+void initFactionUpgrades(Faction *faction) {
     printf("Initializing faction upgrades...\n");
     const FactionUpgrade *sourceUpgrades =
         (faction->type == FACTION_VANGUARD) ? vanguardUpgrades : crimsonUpgrades;
@@ -16,9 +14,7 @@ void initFactionUpgrades(Faction *faction)
     faction->upgradeCount = count;
 }
 
-// Function to handle upgrade purchase
-bool purchaseUpgrade(Faction *faction, int upgradeIndex)
-{
+bool purchaseUpgrade(Faction *faction, int upgradeIndex) {
     if (!faction || upgradeIndex >= faction->upgradeCount)
         return false;
 
@@ -26,30 +22,23 @@ bool purchaseUpgrade(Faction *faction, int upgradeIndex)
 
     FactionUpgrade *upgrade = &faction->upgrades[upgradeIndex];
 
-    // Check requirements
     if (faction->playerRank < upgrade->requiredRank)
         return false;
     if (upgrade->currentLevel >= upgrade->maxLevel)
         return false;
 
-    // Calculate actual cost based on current level
     int goldCost = upgrade->baseCost * (upgrade->currentLevel + 1);
     if (progress->totalCoins < goldCost)
         return false;
 
-    // Check gem requirements
-    for (int i = 0; i < 5; i++)
-    {
-        if (upgrade->gemCosts[i] > 0 && progress->gems[i] < upgrade->gemCosts[i])
-        {
+    for (int i = 0; i < 5; i++) {
+        if (upgrade->gemCosts[i] > 0 && progress->gems[i] < upgrade->gemCosts[i]) {
             return false;
         }
     }
 
-    // Apply costs
     progress->totalCoins -= goldCost;
-    for (int i = 0; i < 5; i++)
-    {
+    for (int i = 0; i < 5; i++) {
         progress->gems[i] -= upgrade->gemCosts[i];
     }
 
@@ -60,19 +49,16 @@ bool purchaseUpgrade(Faction *faction, int upgradeIndex)
 void applyStartUpgrades(void) {
     for (int i = 0; i <  progress->vanguardUpgrades.count; i++) {
         int upgradeId = progress->vanguardUpgrades.upgrades[i].upgradeId;
-        if (upgradeId >= 0 && upgradeId < vanguardFaction->upgradeCount)
-        {
+        if (upgradeId >= 0 && upgradeId < vanguardFaction->upgradeCount) {
             if (vanguardFaction->upgrades[upgradeId].applyOn == APPLY_ON_START && vanguardFaction->upgrades[upgradeId].applyEffect != NULL) {
                 vanguardFaction->upgrades[upgradeId].applyEffect(vanguardFaction->upgrades[upgradeId].currentLevel);
             }
         }
     }
 
-    for (int i = 0; i < progress->crimsonUpgrades.count; i++)
-    {
+    for (int i = 0; i < progress->crimsonUpgrades.count; i++) {
         int upgradeId = progress->crimsonUpgrades.upgrades[i].upgradeId;
-        if (upgradeId >= 0 && upgradeId < crimsonFaction->upgradeCount)
-        {
+        if (upgradeId >= 0 && upgradeId < crimsonFaction->upgradeCount) {
             if (crimsonFaction->upgrades[upgradeId].applyOn == APPLY_ON_START && crimsonFaction->upgrades[upgradeId].applyEffect != NULL) {
                 crimsonFaction->upgrades[upgradeId].applyEffect(crimsonFaction->upgrades[upgradeId].currentLevel);
             }

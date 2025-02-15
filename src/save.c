@@ -443,7 +443,6 @@ void drawFileBrowser(void) {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_RenderFillRect(renderer, &fileBrowser->browserRect);
 
-    // Draw title
     SDL_Color textColor = {255, 255, 255, 255};
     renderText("Select Save File to Import",
         fileBrowser->browserRect.x + BROWSER_PADDING,
@@ -451,12 +450,10 @@ void drawFileBrowser(void) {
         textColor
     );
 
-    // Draw current path background
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderFillRect(renderer, &fileBrowser->pathRect);
     
-    // Draw current path with text clipping if needed
-    int maxPathChars = (fileBrowser->pathRect.w - BROWSER_PADDING * 2) / 6; // Approximate width per character
+    int maxPathChars = (fileBrowser->pathRect.w - BROWSER_PADDING * 2) / 6; 
     char displayPath[256];
     if ((int)strlen(fileBrowser->currentPath) > maxPathChars) {
         snprintf(displayPath, sizeof(displayPath), "...%s", 
@@ -467,19 +464,17 @@ void drawFileBrowser(void) {
     
     renderText(displayPath,
         fileBrowser->pathRect.x + BROWSER_PADDING,
-        fileBrowser->pathRect.y + (BROWSER_BUTTON_HEIGHT - 8) / 2, // Center text vertically
+        fileBrowser->pathRect.y + (BROWSER_BUTTON_HEIGHT - 8) / 2, 
         textColor
     );
 
-    // Draw Up button
     drawButton("Up", fileBrowser->upButtonRect, fileBrowser->upHovered);
 
-    // Calculate file list area
     int listStartY = fileBrowser->browserRect.y + BROWSER_PADDING * 2 + BROWSER_BUTTON_HEIGHT + 20;
     int listHeight = fileBrowser->browserRect.h - BROWSER_BUTTON_HEIGHT * 3 - BROWSER_PADDING * 6 - 20;
     int entriesPerPage = listHeight / (FILE_ENTRY_HEIGHT + FILE_ENTRY_SPACING);
     
-    // Draw file entries
+    
     int startIdx = fileBrowser->currentPage * entriesPerPage;
     int endIdx = startIdx + entriesPerPage;
     if (endIdx > fileBrowser->entryCount) {
@@ -494,7 +489,6 @@ void drawFileBrowser(void) {
             FILE_ENTRY_HEIGHT
         };
 
-        // Highlight if selected
         if (&fileBrowser->entries[i] == fileBrowser->selectedFile) {
             SDL_SetRenderDrawColor(renderer, 70, 70, 100, 255);
         } else {
@@ -502,7 +496,6 @@ void drawFileBrowser(void) {
         }
         SDL_RenderFillRect(renderer, &entryRect);
 
-        // Draw icon and name
         char display[256];
         if (fileBrowser->entries[i].isDirectory) {
             snprintf(display, sizeof(display), "📁 %s", fileBrowser->entries[i].name);
@@ -511,12 +504,11 @@ void drawFileBrowser(void) {
         }
         renderText(display, 
             entryRect.x + BROWSER_PADDING,
-            entryRect.y + (FILE_ENTRY_HEIGHT - 8) / 2, // Center text vertically
+            entryRect.y + (FILE_ENTRY_HEIGHT - 8) / 2,
             textColor
         );
     }
 
-    // Draw navigation buttons if needed
     if (fileBrowser->totalPages > 1) {
         if (fileBrowser->currentPage > 0) {
             drawButton("Prev", fileBrowser->prevPageRect, fileBrowser->prevHovered);
@@ -526,12 +518,10 @@ void drawFileBrowser(void) {
         }
     }
 
-    // Draw action buttons
     drawButton("Import", fileBrowser->confirmButtonRect, fileBrowser->confirmHovered);
     drawButton("Cancel", fileBrowser->cancelButtonRect, fileBrowser->cancelHovered);
 }
 
-// Modify handleFileBrowserInput to handle improved directory navigation
 bool handleFileBrowserInput(void) {
     if (!fileBrowser->isActive)
         return false;
@@ -539,11 +529,9 @@ bool handleFileBrowserInput(void) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
     
-    // Convert window coordinates to virtual coordinates
     int virtualMouseX, virtualMouseY;
     windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
-    // Update hover states using virtual coordinates
     fileBrowser->upHovered = isMouseOverButton(virtualMouseX, virtualMouseY, fileBrowser->upButtonRect);
     fileBrowser->confirmHovered = isMouseOverButton(virtualMouseX, virtualMouseY, fileBrowser->confirmButtonRect);
     fileBrowser->cancelHovered = isMouseOverButton(virtualMouseX, virtualMouseY, fileBrowser->cancelButtonRect);
@@ -551,7 +539,6 @@ bool handleFileBrowserInput(void) {
     fileBrowser->prevHovered = isMouseOverButton(virtualMouseX, virtualMouseY, fileBrowser->prevPageRect);
 
     if (event.type == SDL_MOUSEBUTTONDOWN) {
-        // Handle Up button
         if (fileBrowser->upHovered) {
             if (strcmp(fileBrowser->currentPath, "/") != 0) {
                 char *lastSlash = strrchr(fileBrowser->currentPath, '/');
@@ -566,7 +553,6 @@ bool handleFileBrowserInput(void) {
             return true;
         }
 
-        // Handle navigation buttons
         if (fileBrowser->prevHovered && fileBrowser->currentPage > 0) {
             fileBrowser->currentPage--;
             return true;
@@ -576,13 +562,11 @@ bool handleFileBrowserInput(void) {
             return true;
         }
 
-        // Handle Cancel button
         if (fileBrowser->cancelHovered) {
             fileBrowser->isActive = false;
             return true;
         }
 
-        // Handle Confirm button
         if (fileBrowser->confirmHovered && fileBrowser->selectedFile) {
             if (!fileBrowser->selectedFile->isDirectory) {
                 if (importSaveFile(fileBrowser->selectedFile->fullPath)) {
@@ -600,7 +584,6 @@ bool handleFileBrowserInput(void) {
             }
         }
 
-        // Calculate file list area
         int listStartY = fileBrowser->browserRect.y + BROWSER_PADDING * 2 + BROWSER_BUTTON_HEIGHT + 20;
         int listHeight = fileBrowser->browserRect.h - BROWSER_BUTTON_HEIGHT * 3 - BROWSER_PADDING * 6 - 20;
         int entriesPerPage = listHeight / (FILE_ENTRY_HEIGHT + FILE_ENTRY_SPACING);
@@ -611,7 +594,6 @@ bool handleFileBrowserInput(void) {
             endIdx = fileBrowser->entryCount;
         }
 
-        // Handle file/directory selection
         for (int i = startIdx; i < endIdx; i++) {
             SDL_Rect entryRect = {
                 fileBrowser->browserRect.x + BROWSER_PADDING,
@@ -623,7 +605,6 @@ bool handleFileBrowserInput(void) {
             if (isMouseOverButton(virtualMouseX, virtualMouseY, entryRect)) {
                 if (fileBrowser->entries[i].isDirectory) {
                     if (strcmp(fileBrowser->entries[i].name, "..") == 0) {
-                        // Handle ".." directory
                         if (strcmp(fileBrowser->currentPath, "/") != 0) {
                             char *lastSlash = strrchr(fileBrowser->currentPath, '/');
                             if (lastSlash && lastSlash != fileBrowser->currentPath) {
@@ -633,7 +614,6 @@ bool handleFileBrowserInput(void) {
                             }
                         }
                     } else {
-                        // Handle regular directory navigation
                         if (strcmp(fileBrowser->currentPath, "/") == 0) {
                             snprintf(fileBrowser->currentPath, MAX_PATH_LENGTH, "/%s",
                                 fileBrowser->entries[i].name);
@@ -657,10 +637,8 @@ bool handleFileBrowserInput(void) {
     return false;
 }
 
-void cleanupFileBrowser(void)
-{
-    if (fileBrowser)
-    {
+void cleanupFileBrowser(void) {
+    if (fileBrowser) {
         free(fileBrowser);
         fileBrowser = NULL;
     }
