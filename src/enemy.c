@@ -12,10 +12,10 @@ void enemyTurn(void)
 
                 if (isTriggered(enemyCard) && isInRange(player->x, player->y, j, i, enemyCard->attack.range))
                 {
-                    float startX = (WINDOW_WIDTH - GRID_SIZE) / 2 + (j + 0.5f) * CARD_SIZE;
-                    float startY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + (i + 0.5f) * CARD_SIZE;
-                    float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + player->x * CARD_SIZE + CARD_SIZE / 2;
-                    float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + player->y * CARD_SIZE + CARD_SIZE / 2;
+                    float startX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2 + (j + 0.5f) * CARD_VIRTUAL_SIZE;
+                    float startY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2 + (i + 0.5f) * CARD_VIRTUAL_SIZE;
+                    float targetX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2 + player->x * CARD_VIRTUAL_SIZE + CARD_VIRTUAL_SIZE / 2;
+                    float targetY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2 + player->y * CARD_VIRTUAL_SIZE + CARD_VIRTUAL_SIZE / 2;
 
                     if (!isShooting)
                     {
@@ -52,10 +52,10 @@ void enemyInteraction(int enemyX, int enemyY)
         return;
     }
 
-    float startX = player->animation.currentX + CARD_SIZE / 2;
-    float startY = player->animation.currentY + CARD_SIZE / 2;
-    float targetX = (WINDOW_WIDTH - GRID_SIZE) / 2 + (enemyX + 0.5) * CARD_SIZE; // Adjust based on grid cell size
-    float targetY = (WINDOW_HEIGHT - GRID_SIZE) / 2 + (enemyY + 0.5) * CARD_SIZE;
+    float startX = player->animation.currentX + CARD_VIRTUAL_SIZE / 2;
+    float startY = player->animation.currentY + CARD_VIRTUAL_SIZE / 2;
+    float targetX = (VIRTUAL_WIDTH - GRID_VIRTUAL_SIZE) / 2 + (enemyX + 0.5) * CARD_VIRTUAL_SIZE; // Adjust based on grid cell size
+    float targetY = (VIRTUAL_HEIGHT - GRID_VIRTUAL_SIZE) / 2 + (enemyY + 0.5) * CARD_VIRTUAL_SIZE;
 
     Animation *shootAnimation = (Animation *)malloc(sizeof(Animation));
     if (!shootAnimation)

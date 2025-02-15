@@ -43,7 +43,7 @@ int main(int argc, const char *argv[]) {
     initRenderContext();
 
     // Load font
-    font = TTF_OpenFont("./resource/fonts/MinimalPixelFont.ttf", 24);
+    font = TTF_OpenFont("./resource/fonts/Minecraftia-Regular.ttf", 12);
     if (!font) {
         SDL_Log("Failed to load font: %s", TTF_GetError());
         SDL_DestroyRenderer(renderer);

@@ -347,21 +347,39 @@ void handleHubInput(void) {
     }
 }
 
-void drawQuitButton(void) {
+void drawQuitButton(void)
+{
+    // Define quit button in virtual coordinates
     SDL_Rect quitRect = {
-        VIRTUAL_WIDTH - FACTION_BUTTON_WIDTH - STATS_TEXT_PADDING,
-        STATS_TEXT_PADDING,
-        FACTION_BUTTON_WIDTH,
-        FACTION_BUTTON_HEIGHT
+        VIRTUAL_WIDTH - QUIT_BUTTON_VIRTUAL_WIDTH - 10,
+        10,
+        QUIT_BUTTON_VIRTUAL_WIDTH,
+        QUIT_BUTTON_VIRTUAL_HEIGHT
     };
 
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
+    
+    // Convert window coordinates to virtual coordinates
     int virtualMouseX, virtualMouseY;
     windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
-    bool isHovered = isMouseOverButton(virtualMouseX, virtualMouseY, quitRect);
-    drawButton("Quit", quitRect, isHovered);
+    SDL_Color quitColor = {255, 255, 255, 255};
+    SDL_Color hoverColor = {255, 255, 0, 255};
+    SDL_Color color = quitColor;
+
+    if (isMouseOverButton(virtualMouseX, virtualMouseY, quitRect))
+    {
+        color = hoverColor;
+    }
+
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderFillRect(renderer, &quitRect);
+
+    // Position text within button
+    int textX = VIRTUAL_WIDTH - QUIT_BUTTON_VIRTUAL_WIDTH - 5;  // 5 pixels offset from button edge
+    int textY = 12;  // Centered vertically in button
+    renderText("Quit", textX, textY, (SDL_Color){0, 0, 0, 255});
 }
 
 void drawGameOver(void)
@@ -369,28 +387,40 @@ void drawGameOver(void)
     // Create blur effect by drawing semi-transparent overlay
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
-    SDL_Rect fullscreen = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+    SDL_Rect fullscreen = {0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
     SDL_RenderFillRect(renderer, &fullscreen);
 
-    // Get mouse position for hover effects
+    // Get mouse position and convert to virtual coordinates
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
+    int virtualMouseX, virtualMouseY;
+    windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
     // Game Over text
     SDL_Color textColor = {255, 255, 255, 255};
     renderText("Game Over",
-               WINDOW_WIDTH / 2 - 80, WINDOW_HEIGHT / 3, textColor);
+               VIRTUAL_WIDTH / 2 - 40,  // Centered, accounting for text width
+               VIRTUAL_HEIGHT / 3, 
+               textColor);
 
-    // Score
+    // Score text
     char scoreText[32];
     snprintf(scoreText, sizeof(scoreText), "Score: %d", gameContext->score);
     renderText(scoreText,
-               WINDOW_WIDTH / 2 - 60, WINDOW_HEIGHT / 2 - 30, textColor);
+               VIRTUAL_WIDTH / 2 - 30,  // Centered, accounting for text width
+               VIRTUAL_HEIGHT / 2 - 15, 
+               textColor);
 
-    // Single button to return to town
-    SDL_Rect toTownRect = {WINDOW_WIDTH / 2 - 60, WINDOW_HEIGHT * 2 / 3, 120, 50};
+    // Single button to return to town - positioned in virtual coordinates
+    SDL_Rect toTownRect = {
+        VIRTUAL_WIDTH / 2 - GAME_OVER_BUTTON_WIDTH / 2,  // Centered horizontally
+        VIRTUAL_HEIGHT * 2 / 3,                          // Two thirds down the screen
+        GAME_OVER_BUTTON_WIDTH,
+        GAME_OVER_BUTTON_HEIGHT
+    };
+
     drawButton("To Town", toTownRect,
-               isMouseOverButton(mouseX, mouseY, toTownRect));
+               isMouseOverButton(virtualMouseX, virtualMouseY, toTownRect));
 }
 
 void handleMenuInput(void) {
@@ -457,8 +487,19 @@ void handleQuitInput(void)
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
 
-        SDL_Rect quitRect = {WINDOW_WIDTH - 100, 20, 80, 50};
-        if (isMouseOverButton(mouseX, mouseY, quitRect))
+        // Convert window coordinates to virtual coordinates
+        int virtualMouseX, virtualMouseY;
+        windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
+
+        // Define quit button in virtual coordinates
+        SDL_Rect quitRect = {
+            VIRTUAL_WIDTH - QUIT_BUTTON_VIRTUAL_WIDTH - 10,  // 10 pixels from right edge
+            10,                                              // 10 pixels from top
+            QUIT_BUTTON_VIRTUAL_WIDTH,
+            QUIT_BUTTON_VIRTUAL_HEIGHT
+        };
+
+        if (isMouseOverButton(virtualMouseX, virtualMouseY, quitRect))
         {
             player->isAlive = 0;
         }
@@ -469,15 +510,25 @@ void handleGameOverInput(void)
 {
     if (event.type == SDL_MOUSEBUTTONDOWN)
     {
+        // Add score to total progress
         progress->totalCoins += gameContext->score;
         saveProgress(saveSelectUI->selectedFile);
 
-        int mouseX = event.button.x;
-        int mouseY = event.button.y;
+        // Convert mouse coordinates to virtual space
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        int virtualMouseX, virtualMouseY;
+        windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
-        // To Town button
-        SDL_Rect toTownRect = {WINDOW_WIDTH / 2 - 60, WINDOW_HEIGHT * 2 / 3, 120, 50};
-        if (isMouseOverButton(mouseX, mouseY, toTownRect))
+        // Define button rect in virtual coordinates
+        SDL_Rect toTownRect = {
+            VIRTUAL_WIDTH / 2 - GAME_OVER_BUTTON_WIDTH / 2,
+            VIRTUAL_HEIGHT * 2 / 3,
+            GAME_OVER_BUTTON_WIDTH,
+            GAME_OVER_BUTTON_HEIGHT
+        };
+
+        if (isMouseOverButton(virtualMouseX, virtualMouseY, toTownRect))
         {
             gameContext->currentState = STATE_HUB;
         }

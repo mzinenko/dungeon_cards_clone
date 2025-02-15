@@ -161,6 +161,8 @@ typedef struct Card
 
     void *customData; // Pointer for additional, context-specific data
     Texture *texture; // Texture for rendering
+
+    Uint32 lastFrameTime;
 } Card;
 
 // Animated card struct

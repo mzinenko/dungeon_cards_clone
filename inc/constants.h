@@ -87,6 +87,17 @@
 #define STATS_BAR_HEIGHT 12
 #define STATS_TEXT_PADDING 4
 
+#define EVENT_OBSERVER_VIRTUAL_WIDTH 112  // Half of original 224
+#define EVENT_OBSERVER_VIRTUAL_HEIGHT 120 // Half of original 240
+#define PROJECTILE_VIRTUAL_WIDTH 28       // Half of original 56
+#define PROJECTILE_VIRTUAL_HEIGHT 16      // Half of original 32
+
+#define QUIT_BUTTON_VIRTUAL_WIDTH 40
+#define QUIT_BUTTON_VIRTUAL_HEIGHT 25
+
+#define GAME_OVER_BUTTON_WIDTH 60
+#define GAME_OVER_BUTTON_HEIGHT 25
+
 // Existing enums
 typedef enum
 {

@@ -239,14 +239,16 @@ void handlePlayerInput(int gridRows, int gridCols)
         if (event.button.button == SDL_BUTTON_LEFT)
         {
             // Translate mouse coordinates to grid coordinates
-            int gridX = (WINDOW_WIDTH - (grid->cols * CARD_SIZE)) / 2;
-            int gridY = (WINDOW_HEIGHT - (grid->rows * CARD_SIZE)) / 2;
+            int gridX = (VIRTUAL_WIDTH - (grid->cols * CARD_VIRTUAL_SIZE)) / 2;
+            int gridY = (VIRTUAL_HEIGHT - (grid->rows * CARD_VIRTUAL_SIZE)) / 2;
 
             int mouseX = event.button.x;
             int mouseY = event.button.y;
 
-            int gridCol = (mouseX - gridX) / CARD_SIZE;
-            int gridRow = (mouseY - gridY) / CARD_SIZE;
+            windowToVirtual(mouseX, mouseY, &mouseX, &mouseY);
+
+            int gridCol = (mouseX - gridX) / CARD_VIRTUAL_SIZE;
+            int gridRow = (mouseY - gridY) / CARD_VIRTUAL_SIZE;
 
             // Check if clicked card is an enemy
             if (gridRow >= 0 && gridRow < grid->rows &&
@@ -258,13 +260,13 @@ void handlePlayerInput(int gridRows, int gridCols)
         }
         if (event.type == SDL_MOUSEMOTION)
         {
-            int gridX = (WINDOW_WIDTH - (grid->cols * CARD_SIZE)) / 2;
-            int gridY = (WINDOW_HEIGHT - (grid->rows * CARD_SIZE)) / 2;
+            int gridX = (VIRTUAL_WIDTH - (grid->cols * CARD_VIRTUAL_SIZE)) / 2;
+            int gridY = (VIRTUAL_HEIGHT - (grid->rows * CARD_VIRTUAL_SIZE)) / 2;
             int mouseX = event.motion.x;
             int mouseY = event.motion.y;
 
-            int gridCol = (mouseX - gridX) / CARD_SIZE;
-            int gridRow = (mouseY - gridY) / CARD_SIZE;
+            int gridCol = (mouseX - gridX) / CARD_VIRTUAL_SIZE;
+            int gridRow = (mouseY - gridY) / CARD_VIRTUAL_SIZE;
 
             // Check if mouse is over an enemy card
             if (gridRow >= 0 && gridRow < grid->rows &&

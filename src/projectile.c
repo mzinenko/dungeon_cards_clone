@@ -1,19 +1,17 @@
 #include "../inc/header.h"
 
-void renderProjectiles(void)
-{
-    if (player->animation.isAnimating || (eventObserver && eventObserver->isAnimating))
+void renderProjectiles(void) {
+    if (player->animation.isAnimating || 
+        (eventObserver && eventObserver->isAnimating))
         return;
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 
-    for (int i = 0; i < projectileCount; i++)
-    {
+    for (int i = 0; i < projectileCount; i++) {
         if (!projectiles[i].active)
             continue;
 
-        // Calculate rotation angle in degrees from velocity
-        double angle = atan2(projectiles[i].vy, projectiles[i].vx) * 180.0 / (float)M_PI;
+        double angle = atan2(projectiles[i].vy, projectiles[i].vx) * 180.0 / M_PI;
 
         if (!projectiles[i].texture || !projectiles[i].texture->texture)
             return;
@@ -23,40 +21,51 @@ void renderProjectiles(void)
 
         static Uint32 lastFrameTime = 0;
         Uint32 currentTime = SDL_GetTicks();
-        if (currentTime - lastFrameTime > FRAME_DELAY && projectileTexture->frameCount > 1)
-        {
-            projectiles[i].texture->currentFrame = (projectiles[i].texture->currentFrame + 1) % projectileTexture->frameCount;
+        
+        if (currentTime - lastFrameTime > FRAME_DELAY && 
+            projectileTexture->frameCount > 1) {
+            projectiles[i].texture->currentFrame = 
+                (projectiles[i].texture->currentFrame + 1) % 
+                projectileTexture->frameCount;
             lastFrameTime = currentTime;
         }
 
-        if (projectileTexture->alignment)
-        {
+        // Calculate frame clip
+        if (projectileTexture->alignment) {
             spriteClip.x = projectileTexture->clipRect.x;
-            spriteClip.y = projectileTexture->clipRect.y + projectiles[i].texture->currentFrame * (projectileTexture->clipRect.h + projectileTexture->frameGap);
+            spriteClip.y = projectileTexture->clipRect.y + 
+                projectiles[i].texture->currentFrame * 
+                (projectileTexture->clipRect.h + projectileTexture->frameGap);
             spriteClip.w = projectileTexture->clipRect.w;
             spriteClip.h = projectileTexture->clipRect.h;
-        }
-        else
-        {
-            spriteClip.x = projectileTexture->clipRect.x + projectiles[i].texture->currentFrame * (projectileTexture->clipRect.w + projectileTexture->frameGap);
+        } else {
+            spriteClip.x = projectileTexture->clipRect.x + 
+                projectiles[i].texture->currentFrame * 
+                (projectileTexture->clipRect.w + projectileTexture->frameGap);
             spriteClip.y = projectileTexture->clipRect.y;
             spriteClip.w = projectileTexture->clipRect.w;
             spriteClip.h = projectileTexture->clipRect.h;
         }
 
-        float destW = spriteClip.w;
-        float destH = spriteClip.h;
-        SDL_Rect destRect = {projectiles[i].x - destW / 2, projectiles[i].y - destH / 2, destW, destH};
+        // Scale to virtual resolution
+        float destW = PROJECTILE_VIRTUAL_WIDTH;
+        float destH = PROJECTILE_VIRTUAL_HEIGHT;
+        
+        SDL_Rect destRect = {
+            projectiles[i].x - destW / 2,
+            projectiles[i].y - destH / 2,
+            destW,
+            destH
+        };
 
-        // Use SDL_RenderCopyEx for rotation
         SDL_RenderCopyEx(
             renderer,
             projectileTexture->texture,
             &spriteClip,
             &destRect,
-            angle + 180,  // Rotation angle in degrees
-            NULL,         // Rotation center (NULL for center)
-            SDL_FLIP_NONE // No flipping
+            angle + 180,
+            NULL,
+            SDL_FLIP_NONE
         );
     }
 }
@@ -130,12 +139,12 @@ void updateProjectiles(Animation *animation, float deltaTime)
     }
 }
 
-void shootProjectile(float startX, float startY, float targetX, float targetY, float durationMs)
-{
-    Projectile *temp = realloc(projectiles, (projectileCount + 1) * sizeof(Projectile));
-    if (temp == NULL)
-    {
-        fprintf(stderr, "Shoot Projectile: Failed to allocate memory for new projectile\n");
+void shootProjectile(float startX, float startY, float targetX, float targetY, 
+                    float durationMs) {
+    Projectile *temp = realloc(projectiles, 
+                              (projectileCount + 1) * sizeof(Projectile));
+    if (temp == NULL) {
+        fprintf(stderr, "Failed to allocate memory for new projectile\n");
         return;
     }
     projectiles = temp;
@@ -148,6 +157,7 @@ void shootProjectile(float startX, float startY, float targetX, float targetY, f
     float durationSeconds = durationMs / 1000.0f;
     float speed = distance / durationSeconds;
 
+    // Calculate velocities in virtual coordinates
     newProjectile->vx = (dx / distance) * speed;
     newProjectile->vy = (dy / distance) * speed;
     newProjectile->x = startX;
@@ -155,10 +165,9 @@ void shootProjectile(float startX, float startY, float targetX, float targetY, f
     newProjectile->targetX = targetX;
     newProjectile->targetY = targetY;
     newProjectile->active = true;
-    newProjectile->elapsedTime = 0.0f;         // Start with 0 elapsed time
-    newProjectile->duration = durationSeconds; // Total duration in seconds
+    newProjectile->elapsedTime = 0.0f;
+    newProjectile->duration = durationSeconds;
     newProjectile->texture = &eventObserverTextures[1];
 
     projectileCount++;
-    printf("Projectile added. Count: %d\n", projectileCount);
 }
