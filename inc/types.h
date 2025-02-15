@@ -3,39 +3,33 @@
 
 #include <constants.h>
 
-typedef struct
-{
-    int characterSelected; // For future character selection
-    int score;             // Can be based on gold collected or other metrics
+typedef struct {
+    int characterSelected;
+    int score;         
     GameState currentState;
 } GameContext;
 
-typedef struct
-{
+typedef struct {
     int upgradeId;
     int currentLevel;
 } SavedUpgrade;
 
-typedef struct
-{
-    int totalCoins; // Total coins collected across all games
-    int gems[5];    // Gems collected
+typedef struct {
+    int totalCoins;
+    int gems[5];
 
-    struct
-    {
+    struct {
         SavedUpgrade upgrades[MAX_FACTION_UPGRADES];
         int count;
     } vanguardUpgrades;
 
-    struct
-    {
+    struct {
         SavedUpgrade upgrades[MAX_FACTION_UPGRADES];
         int count;
     } crimsonUpgrades;
 } PlayerProgress;
 
-typedef struct
-{
+typedef struct {
     const char *name;
     const char *description;
     int baseCost;
@@ -43,8 +37,7 @@ typedef struct
     void (*applyUpgrade)(void);
 } StoreItem;
 
-typedef struct
-{
+typedef struct {
     StoreItem *items;
     int itemCount;
     int selectedItem;
@@ -52,47 +45,41 @@ typedef struct
     SDL_Rect backButton;
 } Store;
 
-typedef struct
-{
+typedef struct {
     char *texturePath;
     SDL_Texture *texture;
     SDL_Rect clipRect;
     int frameCount;
     int currentFrame;
     int frameGap;
-    bool alignment; // true for vertical, false for horizontal
+    bool alignment;
 } Texture;
 
-typedef struct
-{
-    // Position
+typedef struct {
     int x;
     int y;
     int prevX;
     int prevY;
 
-    // Alive status
+
     bool isAlive;
 
-    // Attack-related properties
-    struct
-    {
-        int meleeDamage;       // Damage for melee attacks
-        int damage;            // Damage for enemies and weapons
-        int ammo;              // Ammo for weapons
-        int range;             // Range of attack
-        float critChance;      // Critical hit chance (0.0 to 1.0)
-        float multiShotChance; // Multi-shot chance (0.0 to 1.0)
+    struct {
+        int meleeDamage;
+        int damage;
+        int ammo;
+        int range;
+        float critChance;
+        float multiShotChance;
     } attack;
 
     // Defense-related properties
-    struct
-    {
-        int hp;              // Health points
-        int maxHp;           // Maximum health points
-        int armor;           // Armor value
-        ArmorType armorType; // Type of armor
-        bool isInvulnerable; // Additional flag for special states
+    struct {
+        int hp;   
+        int maxHp; 
+        int armor; 
+        ArmorType armorType;
+        bool isInvulnerable;
     } defense;
 
     struct {
@@ -105,8 +92,7 @@ typedef struct
     int gems[5];
 
     // Animation data
-    struct
-    {
+    struct {
         float currentX;
         float currentY;
         float animationProgress;
@@ -116,24 +102,21 @@ typedef struct
     } animation;
 
     // Rendering-related
-    Texture *texture; // Ensure this is managed properly
+    Texture *texture; 
 } Player;
 
-typedef struct
-{
+typedef struct {
     CardType type;
     float weight;
 } CardWeight;
 
 // Card struct
-typedef struct Card
-{
-    char *id;          // Dynamically allocated string identifier
-    CardType type;     // Type of the card
-    CardRarity rarity; // Rarity of the card
+typedef struct Card {
+    char *id;       
+    CardType type;   
+    CardRarity rarity;
 
-    struct
-    {
+    struct {
         int damage;
         int range;
         int ammo;
@@ -141,8 +124,7 @@ typedef struct Card
         float multiShotChance;
     } attack;
 
-    struct
-    {
+    struct {
         int hp;
         int maxHp;
         int armor;
@@ -151,19 +133,17 @@ typedef struct Card
         bool isInvulnerable;
     } defense;
 
-    struct
-    {
+    struct {
         int x, y;
     } animation;
 
-    struct
-    {
+    struct {
         int value;
         float multiplier;
     } value;
 
-    void *customData; // Pointer for additional, context-specific data
-    Texture *texture; // Texture for rendering
+    void *customData;
+    Texture *texture;
 
     Uint32 lastFrameTime;
 } Card;
@@ -175,7 +155,7 @@ typedef struct
     float currentX, currentY;
     float targetX, targetY;
     Card card;
-    float animationProgress; // 0.0 to 1.0
+    float animationProgress; 
 } AnimatedCard;
 
 typedef struct
@@ -192,7 +172,7 @@ typedef struct
 {
     int rows;
     int cols;
-    Card **cells; // 2D array of cards
+    Card **cells; 
 } Grid;
 
 extern Texture *eventObserverTextures;
@@ -270,25 +250,22 @@ typedef void (*UpdateAnimationFunc)(struct Animation *animation, float deltaTime
 typedef void (*OnAnimationEndFunc)(struct Animation *animation);
 
 // Animation structure
-typedef struct Animation
-{
-    UpdateAnimationFunc updateAnimation; // Custom update function
-    OnAnimationEndFunc onAnimationEnd;   // Callback when animation ends
-    bool isRunning;                      // Whether the animation is active
-    void *userData;                      // Pointer to the animated object or additional data
+typedef struct Animation {
+    UpdateAnimationFunc updateAnimation;
+    OnAnimationEndFunc onAnimationEnd; 
+    bool isRunning;
+    void *userData;
 } Animation;
 
 // Global animation manager
-typedef struct
-{
-    Animation *animations[MAX_ANIMATIONS]; // Array of animation pointers
-    int count;                             // Number of active animations
+typedef struct {
+    Animation *animations[MAX_ANIMATIONS]; 
+    int count; 
 } AnimationManager;
 
 extern AnimationManager *animationManager;
 
-typedef struct
-{
+typedef struct {
     SDL_Rect rect;
     ButtonState state;
     Texture *texture;
@@ -302,32 +279,30 @@ extern MenuButton *menuButtons;
 typedef struct
 {
     char *name;
-    int relationship; // 0-100
-    FactionType type; // Add this
+    int relationship;
+    FactionType type;
     SDL_Texture *banner;
     SDL_Rect bannerRect;
-    bool isHovered; // Add this for hover effects
+    bool isHovered; 
 } Banner;
 
 // New structure for hub interface
 // Update the HubInterface struct in types.h
-typedef struct
-{
+typedef struct {
     SDL_Rect playerPhotoRect;
     SDL_Rect statsRect;
     SDL_Rect godsRect;
     SDL_Rect resourceRect;
-    SDL_Rect quitButton; // New quit button
-    SDL_Rect playButton; // New play button
-    bool quitHovered;    // Hover state for quit button
-    bool playHovered;    // Hover state for play button
-    Banner banners[4];   // 4 banners
+    SDL_Rect quitButton;
+    SDL_Rect playButton;
+    bool quitHovered; 
+    bool playHovered; 
+    Banner banners[4];
     SDL_Texture *playerPhoto;
 } HubInterface;
 
 // Resource types for the resource display
-typedef enum
-{
+typedef enum {
     RESOURCE_GOLD,
     RESOURCE_GEM_COMMON,
     RESOURCE_GEM_RARE,
@@ -336,8 +311,7 @@ typedef enum
 } ResourceType;
 
 // Resource structure
-typedef struct
-{
+typedef struct {
     ResourceType type;
     int amount;
     SDL_Texture *icon;
@@ -345,8 +319,7 @@ typedef struct
 
 extern HubInterface *hubInterface;
 
-typedef struct
-{
+typedef struct {
     uint32_t magicNumber;
     uint32_t version;
     time_t timestamp;
@@ -354,8 +327,7 @@ typedef struct
     uint32_t checksum;
 } SaveFileHeader;
 
-typedef struct
-{
+typedef struct {
     char filename[256];
     time_t lastModified;
     bool isValid;
@@ -365,15 +337,13 @@ typedef struct
 extern SaveFileInfo saveFiles[MAX_SAVE_FILES];
 extern int numSaveFiles;
 
-typedef struct
-{
+typedef struct {
     SDL_Rect rect;
     SaveFileInfo info;
     bool isHovered;
 } SaveFileButton;
 
-typedef struct
-{
+typedef struct {
     SaveFileButton *saveButtons;
     int saveButtonCount;
     SDL_Rect newGameButton;
@@ -387,15 +357,13 @@ typedef struct
 
 extern SaveSelectUI *saveSelectUI;
 
-typedef struct
-{
+typedef struct {
     char name[256];
     char fullPath[MAX_PATH_LENGTH];
     bool isDirectory;
 } FileEntry;
 
-typedef struct
-{
+typedef struct {
     FileEntry entries[MAX_FILE_ENTRIES];
     int entryCount;
     int currentPage;
@@ -419,21 +387,19 @@ typedef struct
 
 extern FileBrowser *fileBrowser;
 
-typedef struct
-{
+typedef struct {
     const char *name;
     const char *description;
     int maxLevel;
     int currentLevel;
-    int baseCost;    // Gold cost
-    int gemCosts[5]; // Array of gem costs for each rarity, index matches rarity enum
+    int baseCost;   
+    int gemCosts[5]; 
     int requiredRank;
     ApplyOn applyOn;
     void (*applyEffect)(int currentLevel);
 } FactionUpgrade;
 
-typedef struct
-{
+typedef struct {
     const char *name;
     const char *description;
     bool isRepeatable;
@@ -446,8 +412,7 @@ typedef struct
     void (*grantReward)(void);
 } FactionQuest;
 
-typedef struct
-{
+typedef struct {
     SDL_Rect leaderArtRect;
     SDL_Rect dialogRect;
     SDL_Rect contentRect;
@@ -455,12 +420,11 @@ typedef struct
     bool isStoreTab;
     bool returnHovered;
     DialogState dialogState;
-    int scrollOffset;    // Add this: tracks scroll position
-    int maxScrollOffset; // Add this: maximum scroll value
+    int scrollOffset;  
+    int maxScrollOffset;
 } FactionUI;
 
-typedef struct
-{
+typedef struct {
     FactionType type;
     const char *name;
     int playerRank;
@@ -475,7 +439,7 @@ typedef struct
     const char *currentDialog;
 } Faction;
 
-// Global variables to be externed:
+
 extern Faction *vanguardFaction;
 extern Faction *crimsonFaction;
 extern Faction *currentFaction;
@@ -490,7 +454,7 @@ typedef struct {
     SDL_Texture* renderTarget;
     float scaleX;
     float scaleY;
-    SDL_Rect outputRect;  // For letterboxing
+    SDL_Rect outputRect;
 } RenderContext;
 
 extern RenderContext *renderCtx;
