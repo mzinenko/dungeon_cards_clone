@@ -227,4 +227,30 @@ void applyStartUpgrades(void);
 void applyCombatTraining(int currentLevel);
 void applyBallisticExpertise(int currentLevel);
 
+// Initialize audio system
+void initAudioManager(void);
+
+// Load and play a sound
+void playSound(const char *path);
+
+// Stop a specific sound
+void stopSound(const char *path);
+
+// Stop all sounds
+void stopAllSounds(void);
+
+// Set music volume (0-128)
+void setMusicVolume(int volume);
+
+// Toggle mute
+void toggleMute(void);
+
+// Clean up audio system
+void cleanupAudioManager(void);
+
+void initSettingsUI(void);
+void drawSettingsUI(void);
+void handleSettingsInput(void);
+void cleanupSettingsUI(void);
+
 #endif

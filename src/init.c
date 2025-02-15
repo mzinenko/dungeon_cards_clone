@@ -241,3 +241,6 @@ FactionUpgrade crimsonUpgrades[MAX_FACTION_UPGRADES] = {
      .requiredRank = 20,
      .applyOn = APPLY_ON_START,
      .applyEffect = NULL}};
+
+AudioManager *audioManager = NULL;
+SettingsUI *settingsUI = NULL;

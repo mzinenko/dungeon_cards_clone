@@ -288,41 +288,33 @@ bool importSaveFile(const char *sourcePath) {
             }
         }
     }
-    else
-    {
-        remove(destPath); // Clean up failed import
+    else {
+        remove(destPath);
     }
 
     return success;
 }
 
-// In save.c, add new function for deleting saves
-bool deleteSave(const char *filename)
-{
+bool deleteSave(const char *filename) {
     char fullPath[512];
     snprintf(fullPath, sizeof(fullPath), "%s/%s", SAVE_DIR, filename);
 
-    if (remove(fullPath) == 0)
-    {
-        // Refresh save files list after deletion
+    if (remove(fullPath) == 0) {
         scanSaveFiles();
         return true;
     }
     return false;
 }
 
-static int compareFileEntries(const void *a, const void *b)
-{
+static int compareFileEntries(const void *a, const void *b) {
     const FileEntry *fa = (const FileEntry *)a;
     const FileEntry *fb = (const FileEntry *)b;
 
-    // Directories come first
     if (fa->isDirectory && !fb->isDirectory)
         return -1;
     if (!fa->isDirectory && fb->isDirectory)
         return 1;
 
-    // Then sort alphabetically
     return strcasecmp(fa->name, fb->name);
 }
 
@@ -330,7 +322,6 @@ void initFileBrowser(void) {
     fileBrowser = malloc(sizeof(FileBrowser));
     memset(fileBrowser, 0, sizeof(FileBrowser));
 
-    // Calculate browser window position (centered)
     fileBrowser->browserRect = (SDL_Rect){
         (VIRTUAL_WIDTH - BROWSER_WIDTH) / 2,
         (VIRTUAL_HEIGHT - BROWSER_HEIGHT) / 2,
@@ -338,10 +329,9 @@ void initFileBrowser(void) {
         BROWSER_HEIGHT
     };
 
-    // Calculate button positions relative to browser window
     fileBrowser->upButtonRect = (SDL_Rect){
         fileBrowser->browserRect.x + BROWSER_PADDING,
-        fileBrowser->browserRect.y + BROWSER_PADDING + 20, // Space for title
+        fileBrowser->browserRect.y + BROWSER_PADDING + 20,
         BROWSER_BUTTON_WIDTH,
         BROWSER_BUTTON_HEIGHT
     };
@@ -390,9 +380,7 @@ void initFileBrowser(void) {
     fileBrowser->isActive = true;
 }
 
-// Modify scanDirectory to handle root directory and ".." navigation properly
-void scanDirectory(void)
-{
+void scanDirectory(void) {
     DIR *dir = opendir(fileBrowser->currentPath);
     if (!dir)
         return;
@@ -400,9 +388,7 @@ void scanDirectory(void)
     fileBrowser->entryCount = 0;
     struct dirent *entry;
 
-    // Add ".." entry if not in root directory
-    if (strcmp(fileBrowser->currentPath, "/") != 0)
-    {
+    if (strcmp(fileBrowser->currentPath, "/") != 0) {
         FileEntry *fileEntry = &fileBrowser->entries[fileBrowser->entryCount];
         strcpy(fileEntry->name, "..");
         strcpy(fileEntry->fullPath, "..");
@@ -410,30 +396,23 @@ void scanDirectory(void)
         fileBrowser->entryCount++;
     }
 
-    while ((entry = readdir(dir)) && fileBrowser->entryCount < MAX_FILE_ENTRIES)
-    {
-        // Skip "." and ".." (we handle ".." separately)
+    while ((entry = readdir(dir)) && fileBrowser->entryCount < MAX_FILE_ENTRIES) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
 
         FileEntry *fileEntry = &fileBrowser->entries[fileBrowser->entryCount];
         strncpy(fileEntry->name, entry->d_name, 255);
 
-        // Construct full path
-        if (strcmp(fileBrowser->currentPath, "/") == 0)
-        {
+        if (strcmp(fileBrowser->currentPath, "/") == 0) {
             snprintf(fileEntry->fullPath, MAX_PATH_LENGTH, "/%s", entry->d_name);
         }
-        else
-        {
+        else {
             snprintf(fileEntry->fullPath, MAX_PATH_LENGTH, "%s/%s",
                      fileBrowser->currentPath, entry->d_name);
         }
 
-        // Check if it's a directory
         struct stat st;
-        if (stat(fileEntry->fullPath, &st) == 0)
-        {
+        if (stat(fileEntry->fullPath, &st) == 0) {
             fileEntry->isDirectory = S_ISDIR(st.st_mode);
         }
 
@@ -442,14 +421,11 @@ void scanDirectory(void)
 
     closedir(dir);
 
-    // Sort entries
     qsort(fileBrowser->entries, fileBrowser->entryCount,
           sizeof(FileEntry), compareFileEntries);
 
-    // Calculate total pages
     fileBrowser->totalPages = (fileBrowser->entryCount + MAX_FILES_PER_PAGE - 1) / MAX_FILES_PER_PAGE;
-    if (fileBrowser->currentPage >= fileBrowser->totalPages)
-    {
+    if (fileBrowser->currentPage >= fileBrowser->totalPages) {
         fileBrowser->currentPage = fileBrowser->totalPages - 1;
     }
     if (fileBrowser->currentPage < 0)
@@ -460,12 +436,10 @@ void drawFileBrowser(void) {
     if (!fileBrowser->isActive)
         return;
 
-    // Draw semi-transparent background overlay
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 192);
     SDL_RenderFillRect(renderer, NULL);
 
-    // Draw browser window background
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_RenderFillRect(renderer, &fileBrowser->browserRect);
 

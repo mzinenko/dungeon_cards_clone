@@ -104,7 +104,7 @@ void initHubInterface(void) {
     };
 
     int bannersTotalWidth = 2 * HUB_BANNER_WIDTH + HUB_BANNER_SPACING;
-    int bannersStartX = (VIRTUAL_WIDTH - bannersTotalWidth) / 2;
+    int bannersStartX = (VIRTUAL_WIDTH - bannersTotalWidth) / 2 + HUB_PLAYER_PHOTO_SIZE / 2; 
     int bannersY = (VIRTUAL_HEIGHT - HUB_BANNER_HEIGHT) / 2;
 
 
@@ -170,6 +170,7 @@ void drawMainMenu(void) {
 }
 
 void drawHubInterface(void) {
+<<<<<<< HEAD
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderFillRect(renderer, NULL);
 
@@ -178,6 +179,21 @@ void drawHubInterface(void) {
 
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
     SDL_RenderFillRect(renderer, &hubInterface->playerPhotoRect);
+=======
+    // Draw player stats panel
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+    SDL_RenderFillRect(renderer, &hubInterface->statsRect);
+
+    SDL_Rect frameRect = {
+        hubInterface->playerPhotoRect.x - 5,
+        hubInterface->playerPhotoRect.y - 5,
+        hubInterface->playerPhotoRect.w + 10,
+        hubInterface->playerPhotoRect.h + 10
+    };
+    
+    SDL_RenderCopy(renderer, heroTextures[2].texture, NULL, &frameRect);
+    SDL_RenderCopy(renderer, heroTextures[1].texture, NULL, &hubInterface->playerPhotoRect);
+>>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
 
     SDL_RenderFillRect(renderer, &hubInterface->godsRect);
 
@@ -397,7 +413,7 @@ void handleMenuInput(void) {
                 } else if (strcmp(menuButtons[i].identifier, "info") == 0) {
                     gameContext->currentState = STATE_MAIN_MENU;
                 } else if (strcmp(menuButtons[i].identifier, "settings") == 0) {
-                    gameContext->currentState = STATE_MAIN_MENU;
+                    gameContext->currentState = STATE_SETTINGS;
                 }
             }
         }
@@ -637,9 +653,13 @@ void cleanupSaveSelectUI(void) {
 }
 
 void drawGameplayUI(void) {
+<<<<<<< HEAD
     SDL_SetRenderDrawColor(renderer, 45, 45, 45, 255);
     SDL_RenderClear(renderer);
 
+=======
+    // Begin rendering to virtual resolution
+>>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
     renderEventObserver();
     drawGridWithAnimation();
     drawPlayerStats();

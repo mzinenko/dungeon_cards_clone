@@ -7,7 +7,8 @@ int main(int argc, const char *argv[]) {
     printf("isDev: %d\n", isDev);
     printf("Starting initialization...\n");
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    // Initialize SDL with video and audio
+    if (SDL_Init(SDL_INIT_FLAGS) != 0) {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
         return 1;
     }
@@ -20,6 +21,14 @@ int main(int argc, const char *argv[]) {
     }
     printf("TTF initialized successfully\n");
 
+<<<<<<< HEAD
+=======
+    // Initialize audio system
+    initAudioManager();
+    printf("Audio system initialized\n");
+
+    // Create window at initial size, but allow for resizing
+>>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
     window = SDL_CreateWindow(
         "Dungeon Cards Clone",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -33,6 +42,7 @@ int main(int argc, const char *argv[]) {
     if (!renderer) {
         SDL_Log("Failed to create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
+        cleanupAudioManager();
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -46,6 +56,7 @@ int main(int argc, const char *argv[]) {
         SDL_Log("Failed to load font: %s", TTF_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
+        cleanupAudioManager();
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -62,6 +73,9 @@ int main(int argc, const char *argv[]) {
     initGameContext();
     initCardAnimation();
     initAnimationManager();
+
+    // Play startup sound
+    playSound("resource/music/startup.wav");
 
     Uint32 lastFrameTime = SDL_GetTicks();
     int running = 1;
@@ -96,6 +110,7 @@ int main(int argc, const char *argv[]) {
                     if (!player->isAlive) {
                         gameContext->currentState = STATE_GAME_OVER;
                         gameContext->score = player->gold;
+                        playSound("resource/music/game_over.wav");
                     }
                     handlePlayerInput(grid->rows, grid->cols);
                     handleQuitInput();
@@ -113,6 +128,9 @@ int main(int argc, const char *argv[]) {
                 case STATE_HUB:
                     handleHubInput();
                     break;
+                case STATE_SETTINGS:
+                    handleSettingsInput();
+                    break;
                 case STATE_FRACTION:
                     handleFactionInput();
                     break;
@@ -126,6 +144,8 @@ int main(int argc, const char *argv[]) {
             updateAnimations(deltaTime);
 
         beginRender();
+        SDL_Rect backgroundRect = {0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
+        SDL_RenderCopy(renderer, uiTextures[9].texture, NULL, &backgroundRect);
 
         switch (gameContext->currentState) {
             case STATE_MAIN_MENU:
@@ -148,6 +168,9 @@ int main(int argc, const char *argv[]) {
                     drawFileBrowser();
                 }
                 break;
+            case STATE_SETTINGS:
+                drawSettingsUI();
+                break;
             case STATE_FRACTION:
                 drawFactionUI();
                 break;
@@ -157,6 +180,11 @@ int main(int argc, const char *argv[]) {
         SDL_Delay(16);
     }
 
+<<<<<<< HEAD
+=======
+    // Cleanup
+    cleanupAudioManager();
+>>>>>>> e3a1c07d7ca4a6c44e8e786174d12a8161feb929
     destroyRenderContext();
     TTF_CloseFont(font);
     destroyPlayer();

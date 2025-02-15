@@ -83,8 +83,8 @@
 #define FACTION_ITEM_HEIGHT 80
 #define FACTION_ITEM_SPACING 4
 
-#define GRID_VIRTUAL_SIZE 360
-#define CARD_VIRTUAL_SIZE 72
+#define GRID_VIRTUAL_SIZE 400
+#define CARD_VIRTUAL_SIZE 80
 #define STATS_PANEL_WIDTH 120
 #define STATS_PANEL_HEIGHT 140
 #define STATS_BAR_HEIGHT 12
@@ -100,6 +100,12 @@
 
 #define GAME_OVER_BUTTON_WIDTH 60
 #define GAME_OVER_BUTTON_HEIGHT 25
+
+#define MAX_SOUNDS 32
+#define MUSIC_VOLUME_STEP 8
+#define DEFAULT_MUSIC_VOLUME 64
+
+#define SDL_INIT_FLAGS (SDL_INIT_VIDEO | SDL_INIT_AUDIO)
 
 // Existing enums
 typedef enum {
@@ -154,6 +160,7 @@ typedef enum {
     STATE_FRACTION,    
     STATE_GAMEPLAY,
     STATE_GAME_OVER,
+    STATE_SETTINGS,
 } GameState;
 
 typedef enum {
