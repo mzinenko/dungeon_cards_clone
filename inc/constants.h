@@ -103,9 +103,15 @@
 
 #define MAX_SOUNDS 32
 #define MUSIC_VOLUME_STEP 8
-#define DEFAULT_MUSIC_VOLUME 64
+#define DEFAULT_MUSIC_VOLUME 64  // SDL_mixer's volume range is 0-128
+#define DEFAULT_SOUND_VOLUME 64
 
 #define SDL_INIT_FLAGS (SDL_INIT_VIDEO | SDL_INIT_AUDIO)
+
+#define AUDIO_FREQUENCY 44100
+#define AUDIO_FORMAT MIX_DEFAULT_FORMAT
+#define AUDIO_CHANNELS 2
+#define AUDIO_CHUNKSIZE 2048
 
 // Existing enums
 typedef enum {

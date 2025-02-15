@@ -67,6 +67,7 @@ int main(int argc, const char *argv[]) {
     initMenu();
     initHubInterface();
     initFactions();
+    initSettingsUI();
     createPlayer(&heroTextures[0]);
     turn = 0;
     initGrid(5, 5);
@@ -75,10 +76,10 @@ int main(int argc, const char *argv[]) {
     initAnimationManager();
 
     // Play startup sound
-    playSound("resource/music/startup.wav");
+    playMusic("resource/music/background2.wav", true);
 
     Uint32 lastFrameTime = SDL_GetTicks();
-    int running = 1;
+    running = 1;
     while (running) {
         Uint32 currentFrameTime = SDL_GetTicks();
         float deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f;
@@ -110,7 +111,6 @@ int main(int argc, const char *argv[]) {
                     if (!player->isAlive) {
                         gameContext->currentState = STATE_GAME_OVER;
                         gameContext->score = player->gold;
-                        playSound("resource/music/game_over.wav");
                     }
                     handlePlayerInput(grid->rows, grid->cols);
                     handleQuitInput();

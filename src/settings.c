@@ -2,21 +2,44 @@
 
 void initSettingsUI(void) {
     settingsUI = malloc(sizeof(SettingsUI));
+    if (!settingsUI) {
+        printf("Failed to allocate memory for settings UI\n");
+        return;
+    }
     
     int centerX = VIRTUAL_WIDTH / 2;
     int centerY = VIRTUAL_HEIGHT / 2;
     
-    settingsUI->volumeSlider = (SDL_Rect){
+    // Music volume slider
+    settingsUI->musicSlider = (SDL_Rect){
         centerX - 100,
-        centerY - 50,
+        centerY - 80,
         200,
         20
     };
     
-    float volumePercentage = audioManager->musicVolume / 128.0f;
-    settingsUI->volumeHandle = (SDL_Rect){
-        settingsUI->volumeSlider.x + (int)(volumePercentage * settingsUI->volumeSlider.w),
-        settingsUI->volumeSlider.y - 5,
+    // Effects volume slider
+    settingsUI->effectsSlider = (SDL_Rect){
+        centerX - 100,
+        centerY - 20,
+        200,
+        20
+    };
+    
+    // Music handle - position based on current volume
+    float musicPercentage = audioManager->musicVolume / 128.0f;
+    settingsUI->musicHandle = (SDL_Rect){
+        settingsUI->musicSlider.x + (int)(musicPercentage * (settingsUI->musicSlider.w - 20)),
+        settingsUI->musicSlider.y - 5,
+        20,
+        30
+    };
+    
+    // Effects handle - position based on current volume
+    float effectsPercentage = audioManager->soundVolume / 128.0f;
+    settingsUI->effectsHandle = (SDL_Rect){
+        settingsUI->effectsSlider.x + (int)(effectsPercentage * (settingsUI->effectsSlider.w - 20)),
+        settingsUI->effectsSlider.y - 5,
         20,
         30
     };
@@ -35,40 +58,96 @@ void initSettingsUI(void) {
         30
     };
     
-    settingsUI->isDraggingVolume = false;
-    settingsUI->isVolumeHovered = false;
+    // Initialize states
+    settingsUI->isDraggingMusic = false;
+    settingsUI->isDraggingEffects = false;
+    settingsUI->isMusicHovered = false;
+    settingsUI->isEffectsHovered = false;
     settingsUI->isMuteHovered = false;
     settingsUI->isBackHovered = false;
 }
 
 void drawSettingsUI(void) {
-    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-    SDL_RenderClear(renderer);
+    // Draw semi-transparent background
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
+    SDL_RenderFillRect(renderer, NULL);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
     
     SDL_Color textColor = {255, 255, 255, 255};
-    renderText("Settings",
-        VIRTUAL_WIDTH / 2 - 40,
+    renderText("Audio Settings",
+        VIRTUAL_WIDTH / 2 - 60,
         VIRTUAL_HEIGHT / 4,
         textColor
     );
     
-    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    SDL_RenderFillRect(renderer, &settingsUI->volumeSlider);
-    
-    char volumeText[32];
-    snprintf(volumeText, sizeof(volumeText), "Volume: %d%%", 
-        (int)((audioManager->musicVolume / 128.0f) * 100));
-    renderText(volumeText,
-        settingsUI->volumeSlider.x,
-        settingsUI->volumeSlider.y - 20,
+    // Draw music volume text and slider
+    renderText("Music Volume",
+        settingsUI->musicSlider.x,
+        settingsUI->musicSlider.y - 25,
         textColor
     );
     
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-    SDL_RenderFillRect(renderer, &settingsUI->volumeHandle);
+    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    SDL_RenderFillRect(renderer, &settingsUI->musicSlider);
+    
+    SDL_Rect musicFilled = settingsUI->musicSlider;
+    musicFilled.w = settingsUI->musicHandle.x - settingsUI->musicSlider.x + 10;
+    SDL_SetRenderDrawColor(renderer, 100, 100, 200, 255);
+    SDL_RenderFillRect(renderer, &musicFilled);
+    
+    // Draw effects volume text and slider
+    renderText("Effects Volume",
+        settingsUI->effectsSlider.x,
+        settingsUI->effectsSlider.y - 25,
+        textColor
+    );
+    
+    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    SDL_RenderFillRect(renderer, &settingsUI->effectsSlider);
+    
+    SDL_Rect effectsFilled = settingsUI->effectsSlider;
+    effectsFilled.w = settingsUI->effectsHandle.x - settingsUI->effectsSlider.x + 10;
+    SDL_SetRenderDrawColor(renderer, 100, 200, 100, 255);
+    SDL_RenderFillRect(renderer, &effectsFilled);
+    
+    // Draw handles
+    SDL_SetRenderDrawColor(renderer, 
+        settingsUI->isMusicHovered ? 150 : 100,
+        settingsUI->isMusicHovered ? 150 : 100,
+        settingsUI->isMusicHovered ? 250 : 200,
+        255
+    );
+    SDL_RenderFillRect(renderer, &settingsUI->musicHandle);
+    
+    SDL_SetRenderDrawColor(renderer, 
+        settingsUI->isEffectsHovered ? 150 : 100,
+        settingsUI->isEffectsHovered ? 250 : 200,
+        settingsUI->isEffectsHovered ? 150 : 100,
+        255
+    );
+    SDL_RenderFillRect(renderer, &settingsUI->effectsHandle);
+    
+    // Draw current values
+    char volumeText[32];
+    snprintf(volumeText, sizeof(volumeText), "%d%%", 
+        (int)((audioManager->musicVolume / 128.0f) * 100));
+    renderText(volumeText,
+        settingsUI->musicSlider.x + settingsUI->musicSlider.w + 10,
+        settingsUI->musicSlider.y,
+        textColor
+    );
+    
+    snprintf(volumeText, sizeof(volumeText), "%d%%", 
+        (int)((audioManager->soundVolume / 128.0f) * 100));
+    renderText(volumeText,
+        settingsUI->effectsSlider.x + settingsUI->effectsSlider.w + 10,
+        settingsUI->effectsSlider.y,
+        textColor
+    );
     
     drawButton(
-        audioManager->isMuted ? "Unmute" : "Mute",
+        audioManager->isMuted ? "Unmute All" : "Mute All",
         settingsUI->muteButton,
         settingsUI->isMuteHovered
     );
@@ -83,8 +162,11 @@ void handleSettingsInput(void) {
     int virtualMouseX, virtualMouseY;
     windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
     
-    settingsUI->isVolumeHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
-        settingsUI->volumeHandle);
+    // Update hover states
+    settingsUI->isMusicHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        settingsUI->musicHandle);
+    settingsUI->isEffectsHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
+        settingsUI->effectsHandle);
     settingsUI->isMuteHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
         settingsUI->muteButton);
     settingsUI->isBackHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
@@ -92,34 +174,60 @@ void handleSettingsInput(void) {
     
     if (event.type == SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT) {
-            if (settingsUI->isVolumeHovered) {
-                settingsUI->isDraggingVolume = true;
+            // Handle volume sliders drag start
+            if (settingsUI->isMusicHovered) {
+                settingsUI->isDraggingMusic = true;
+            }
+            if (settingsUI->isEffectsHovered) {
+                settingsUI->isDraggingEffects = true;
             }
             if (settingsUI->isMuteHovered) {
                 toggleMute();
+                if (!audioManager->isMuted) {
+                    playSound("resource/music/click.wav");
+                }
             }
             if (settingsUI->isBackHovered) {
+                playSound("resource/music/click.wav");
                 gameContext->currentState = STATE_MAIN_MENU;
+                cleanupSettingsUI();
             }
         }
     }
     else if (event.type == SDL_MOUSEBUTTONUP) {
-        if (event.button.button == SDL_BUTTON_LEFT) {
-            settingsUI->isDraggingVolume = false;
+        settingsUI->isDraggingMusic = false;
+        settingsUI->isDraggingEffects = false;
+        
+        // Play test sound when releasing either slider
+        if (!audioManager->isMuted) {
+            playSound("resource/music/click.wav");
         }
     }
     else if (event.type == SDL_MOUSEMOTION) {
-        if (settingsUI->isDraggingVolume) {
-            int sliderX = virtualMouseX - settingsUI->volumeSlider.x;
-            sliderX = sliderX < 0 ? 0 : sliderX;
-            sliderX = sliderX > settingsUI->volumeSlider.w ? 
-                settingsUI->volumeSlider.w : sliderX;
+        if (settingsUI->isDraggingMusic) {
+            // Update music volume
+            int minX = settingsUI->musicSlider.x;
+            int maxX = settingsUI->musicSlider.x + settingsUI->musicSlider.w - 20;
+            int newX = virtualMouseX - 10;
             
-            float percentage = (float)sliderX / settingsUI->volumeSlider.w;
-            int newVolume = (int)(percentage * 128);
+            newX = (newX < minX) ? minX : (newX > maxX) ? maxX : newX;
+            settingsUI->musicHandle.x = newX;
             
-            setMusicVolume(newVolume);
-            settingsUI->volumeHandle.x = settingsUI->volumeSlider.x + sliderX;
+            float percentage = (float)(newX - minX) / (maxX - minX);
+            setMusicVolume((int)(percentage * 128));
+        }
+        
+        if (settingsUI->isDraggingEffects) {
+            // Update effects volume
+            int minX = settingsUI->effectsSlider.x;
+            int maxX = settingsUI->effectsSlider.x + settingsUI->effectsSlider.w - 20;
+            int newX = virtualMouseX - 10;
+            
+            newX = (newX < minX) ? minX : (newX > maxX) ? maxX : newX;
+            settingsUI->effectsHandle.x = newX;
+            
+            float percentage = (float)(newX - minX) / (maxX - minX);
+            setSoundVolume((int)(percentage * 128));
         }
     }
 }

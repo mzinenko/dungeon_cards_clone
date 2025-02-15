@@ -244,3 +244,7 @@ FactionUpgrade crimsonUpgrades[MAX_FACTION_UPGRADES] = {
 
 AudioManager *audioManager = NULL;
 SettingsUI *settingsUI = NULL;
+
+SDL_Rect exitButton;
+bool exitButtonHovered = false;
+int running = 1;

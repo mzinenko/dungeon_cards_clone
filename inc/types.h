@@ -495,35 +495,44 @@ typedef struct
 
 extern RenderContext *renderCtx;
 
-typedef struct
-{
+typedef struct {
     char *path;
     Mix_Chunk *sound;
     int channel;
     bool isPlaying;
 } Sound;
 
-typedef struct
-{
+typedef struct {
     Sound sounds[MAX_SOUNDS];
     int soundCount;
+    Mix_Music *currentMusic;
+    char *currentMusicPath;
     int musicVolume;
+    int soundVolume;
     bool isMuted;
 } AudioManager;
 
 extern AudioManager *audioManager;
 
 typedef struct {
-    SDL_Rect volumeSlider;
+    SDL_Rect musicSlider;
+    SDL_Rect effectsSlider;
     SDL_Rect muteButton;
     SDL_Rect backButton;
-    SDL_Rect volumeHandle;
-    bool isDraggingVolume;
-    bool isVolumeHovered;
+    SDL_Rect musicHandle;
+    SDL_Rect effectsHandle;
+    bool isDraggingMusic;
+    bool isDraggingEffects;
+    bool isMusicHovered;
+    bool isEffectsHovered;
     bool isMuteHovered;
     bool isBackHovered;
 } SettingsUI;
 
 extern SettingsUI *settingsUI;
+
+extern SDL_Rect exitButton;
+extern bool exitButtonHovered;
+extern int running;
 
 #endif

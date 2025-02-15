@@ -55,6 +55,14 @@ void initMenu(void) {
         menuButtons[i].rect.w = MENU_BUTTON_WIDTH;
         menuButtons[i].rect.h = MENU_BUTTON_HEIGHT;
     }
+
+    exitButton = (SDL_Rect){
+        VIRTUAL_WIDTH - FACTION_BUTTON_WIDTH - FACTION_PADDING,
+        FACTION_PADDING,
+        FACTION_BUTTON_WIDTH,
+        FACTION_BUTTON_HEIGHT
+    };
+    exitButtonHovered = false;
 }
 
 // In initHubInterface()
@@ -167,6 +175,8 @@ void drawMainMenu(void) {
             &menuButtons[i].rect
         );
     }
+
+    drawButton("Exit", exitButton, exitButtonHovered);
 }
 
 void drawHubInterface(void) {
@@ -386,7 +396,33 @@ void handleMenuInput(void) {
         
     int virtualMouseX, virtualMouseY;
     windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
-    
+
+    // Update exit button hover state
+    exitButtonHovered = isMouseOverButton(virtualMouseX, virtualMouseY, exitButton);
+
+    // Handle ESC key
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+        running = 0;  // Stop the game
+        return;
+    }
+
+    // Handle mouse movement for hover states
+    if (event.type == SDL_MOUSEMOTION) {
+        for (int i = 0; i < 3; i++) {
+            SDL_Point virtualPoint = {virtualMouseX, virtualMouseY};
+            if (SDL_PointInRect(&virtualPoint, &menuButtons[i].rect)) {
+                if (menuButtons[i].state != BUTTON_STATE_CLICKED) {
+                    menuButtons[i].state = BUTTON_STATE_HOVER;
+                }
+            } else {
+                if (menuButtons[i].state != BUTTON_STATE_CLICKED) {
+                    menuButtons[i].state = BUTTON_STATE_NORMAL;
+                }
+            }
+        }
+    }
+
+    // Handle mouse movement for hover states
     if (event.type == SDL_MOUSEMOTION) {
         for (int i = 0; i < 3; i++) {
             SDL_Point virtualPoint = {virtualMouseX, virtualMouseY};
@@ -403,6 +439,11 @@ void handleMenuInput(void) {
     }
 
     if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (exitButtonHovered) {
+            running = 0;
+            return;
+        }
+
         for (int i = 0; i < 3; i++) {
             SDL_Point virtualPoint = {virtualMouseX, virtualMouseY};
             if (SDL_PointInRect(&virtualPoint, &menuButtons[i].rect)) {

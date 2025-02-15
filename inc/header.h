@@ -230,22 +230,21 @@ void applyBallisticExpertise(int currentLevel);
 // Initialize audio system
 void initAudioManager(void);
 
-// Load and play a sound
+// Sound effects functions
 void playSound(const char *path);
-
-// Stop a specific sound
 void stopSound(const char *path);
-
-// Stop all sounds
 void stopAllSounds(void);
+void setSoundVolume(int volume);
 
-// Set music volume (0-128)
+// Background music functions
+void playMusic(const char *path, bool loop);
+void stopMusic(void);
+void pauseMusic(void);
+void resumeMusic(void);
 void setMusicVolume(int volume);
 
-// Toggle mute
+// Global audio controls
 void toggleMute(void);
-
-// Clean up audio system
 void cleanupAudioManager(void);
 
 void initSettingsUI(void);
