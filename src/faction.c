@@ -44,16 +44,16 @@ void initFactionUI(Faction* faction) {
             VIRTUAL_HEIGHT * 0.6f   // 60% of height for leader art
         },
         .dialogRect = {
-            FACTION_PADDING,
+            FACTION_PADDING + VIRTUAL_WIDTH * 0.075f,
             VIRTUAL_HEIGHT - FACTION_DIALOG_HEIGHT - FACTION_PADDING,
             VIRTUAL_WIDTH - FACTION_PADDING * 2,
             FACTION_DIALOG_HEIGHT
         },
         .contentRect = {
-            VIRTUAL_WIDTH * 0.3f + FACTION_PADDING * 2,
-            FACTION_TAB_HEIGHT + FACTION_PADDING * 2,
-            VIRTUAL_WIDTH * 0.7f - FACTION_PADDING * 3,
-            VIRTUAL_HEIGHT - FACTION_TAB_HEIGHT - FACTION_DIALOG_HEIGHT - FACTION_PADDING * 4
+            VIRTUAL_WIDTH * 0.275f + FACTION_PADDING * 2,
+            FACTION_TAB_HEIGHT + FACTION_PADDING * 2.75f,
+            VIRTUAL_WIDTH * 0.65f - FACTION_PADDING * 3,
+            VIRTUAL_HEIGHT - FACTION_TAB_HEIGHT - FACTION_DIALOG_HEIGHT - FACTION_PADDING * 6.75f
         },
         .returnButton = {
             VIRTUAL_WIDTH - FACTION_BUTTON_WIDTH - FACTION_PADDING,
@@ -97,7 +97,7 @@ void drawFactionUI(void) {
         return;
 
     // Draw background
-    SDL_Rect backgroundRect = {0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
+    SDL_Rect backgroundRect = {0, 15, VIRTUAL_WIDTH, VIRTUAL_HEIGHT};
     SDL_RenderCopy(renderer, uiTextures[5 + currentFaction->type].texture, &uiTextures[5 + currentFaction->type].clipRect, &backgroundRect);
 
     // Draw faction name and rank
@@ -105,7 +105,7 @@ void drawFactionUI(void) {
     char rankText[64];
     snprintf(rankText, sizeof(rankText), "%s - Standing: %d",
              currentFaction->name, currentFaction->playerRank);
-    renderText(rankText, FACTION_PADDING * 2, FACTION_PADDING, textColor);
+    renderText(rankText, FACTION_PADDING * 2 + (FACTION_TAB_WIDTH + FACTION_PADDING) * 2 + 0.35f * VIRTUAL_WIDTH, FACTION_PADDING + FACTION_TAB_HEIGHT / 4, textColor);
 
     // Draw tabs
     SDL_Rect storeTab = {
@@ -267,18 +267,7 @@ void drawFactionStore(void) {
                     FACTION_BUTTON_HEIGHT
                 };
 
-                SDL_SetRenderDrawColor(renderer,
-                    canAfford ? 60 : 40,
-                    canAfford ? 60 : 40,
-                    canAfford ? 60 : 40,
-                    255
-                );
-                SDL_RenderFillRect(renderer, &buyButton);
-                renderText("Buy",
-                    buyButton.x + FACTION_PADDING,
-                    buyButton.y + FACTION_PADDING / 2,
-                    canAfford ? textColor : lockedColor
-                );
+                drawButton("Buy", buyButton, false);
             }
         }
     }

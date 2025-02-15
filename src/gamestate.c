@@ -102,18 +102,18 @@ void initHubInterface(void) {
 
     // Initialize quit button (top right corner)
     hubInterface->quitButton = (SDL_Rect){
-        VIRTUAL_WIDTH - HUB_BUTTON_WIDTH - HUB_PANEL_PADDING,
+        VIRTUAL_WIDTH - ACTION_BUTTON_WIDTH - HUB_PANEL_PADDING,
         HUB_PANEL_PADDING,
-        HUB_BUTTON_WIDTH,
-        HUB_BUTTON_HEIGHT
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
     };
 
     // Initialize play button (bottom right corner)
     hubInterface->playButton = (SDL_Rect){
-        VIRTUAL_WIDTH - HUB_BUTTON_WIDTH - HUB_PANEL_PADDING,
-        VIRTUAL_HEIGHT - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
-        HUB_BUTTON_WIDTH,
-        HUB_BUTTON_HEIGHT
+        VIRTUAL_WIDTH - ACTION_BUTTON_WIDTH - HUB_PANEL_PADDING,
+        VIRTUAL_HEIGHT - ACTION_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
     };
 
     // Calculate banner positions (centered)
@@ -258,10 +258,10 @@ void drawHubInterface(void) {
 
         // Draw "Enter" button at bottom of banner
         SDL_Rect enterButton = {
-            bannerRect.x + (bannerRect.w / 2 - HUB_BUTTON_WIDTH) / 2,
-            bannerRect.y + bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
-            HUB_BUTTON_WIDTH,
-            HUB_BUTTON_HEIGHT
+            bannerRect.x + (bannerRect.w / 2 - ACTION_BUTTON_WIDTH) / 2,
+            bannerRect.y + bannerRect.h - ACTION_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+            ACTION_BUTTON_WIDTH,
+            ACTION_BUTTON_HEIGHT
         };
         drawButton("Enter", enterButton, banner->isHovered);
     }
@@ -291,11 +291,11 @@ void handleHubInput(void) {
         Banner *banner = &hubInterface->banners[i];
          SDL_Rect enterButton = {
                     hubInterface->banners[i].bannerRect.x + 
-                        (hubInterface->banners[i].bannerRect.w / 2 - HUB_BUTTON_WIDTH) / 2,
+                        (hubInterface->banners[i].bannerRect.w / 2 - ACTION_BUTTON_WIDTH) / 2,
                     hubInterface->banners[i].bannerRect.y + 
-                        hubInterface->banners[i].bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
-                    HUB_BUTTON_WIDTH,
-                    HUB_BUTTON_HEIGHT
+                        hubInterface->banners[i].bannerRect.h - ACTION_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+                    ACTION_BUTTON_WIDTH,
+                    ACTION_BUTTON_HEIGHT
                 };
 
         banner->isHovered = isMouseOverButton(virtualMouseX, virtualMouseY, 
@@ -309,11 +309,11 @@ void handleHubInput(void) {
                 // Only handle click if it's within the enter button area
                 SDL_Rect enterButton = {
                     hubInterface->banners[i].bannerRect.x + 
-                        (hubInterface->banners[i].bannerRect.w / 2 - HUB_BUTTON_WIDTH) / 2,
+                        (hubInterface->banners[i].bannerRect.w / 2 - ACTION_BUTTON_WIDTH) / 2,
                     hubInterface->banners[i].bannerRect.y + 
-                        hubInterface->banners[i].bannerRect.h - HUB_BUTTON_HEIGHT - HUB_PANEL_PADDING,
-                    HUB_BUTTON_WIDTH,
-                    HUB_BUTTON_HEIGHT
+                        hubInterface->banners[i].bannerRect.h - ACTION_BUTTON_HEIGHT - HUB_PANEL_PADDING,
+                    ACTION_BUTTON_WIDTH,
+                    ACTION_BUTTON_HEIGHT
                 };
                 
                 if (isMouseOverButton(virtualMouseX, virtualMouseY, enterButton)) {
@@ -347,10 +347,10 @@ void drawQuitButton(void)
 {
     // Define quit button in virtual coordinates
     SDL_Rect quitRect = {
-        VIRTUAL_WIDTH - QUIT_BUTTON_VIRTUAL_WIDTH - 10,
+        VIRTUAL_WIDTH - ACTION_BUTTON_WIDTH - 10,
         10,
-        QUIT_BUTTON_VIRTUAL_WIDTH,
-        QUIT_BUTTON_VIRTUAL_HEIGHT
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
     };
 
     int mouseX, mouseY;
@@ -360,22 +360,14 @@ void drawQuitButton(void)
     int virtualMouseX, virtualMouseY;
     windowToVirtual(mouseX, mouseY, &virtualMouseX, &virtualMouseY);
 
-    SDL_Color quitColor = {255, 255, 255, 255};
-    SDL_Color hoverColor = {255, 255, 0, 255};
-    SDL_Color color = quitColor;
+    bool isHovered = false;
 
     if (isMouseOverButton(virtualMouseX, virtualMouseY, quitRect))
     {
-        color = hoverColor;
+        isHovered = true;
     }
 
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer, &quitRect);
-
-    // Position text within button
-    int textX = VIRTUAL_WIDTH - QUIT_BUTTON_VIRTUAL_WIDTH - 5;  // 5 pixels offset from button edge
-    int textY = 12;  // Centered vertically in button
-    renderText("Quit", textX, textY, (SDL_Color){0, 0, 0, 255});
+    drawButton("Quit", quitRect, isHovered);
 }
 
 void drawGameOver(void)
@@ -409,10 +401,10 @@ void drawGameOver(void)
 
     // Single button to return to town - positioned in virtual coordinates
     SDL_Rect toTownRect = {
-        VIRTUAL_WIDTH / 2 - GAME_OVER_BUTTON_WIDTH / 2,  // Centered horizontally
+        VIRTUAL_WIDTH / 2 - ACTION_BUTTON_WIDTH / 2,  // Centered horizontally
         VIRTUAL_HEIGHT * 2 / 3,                          // Two thirds down the screen
-        GAME_OVER_BUTTON_WIDTH,
-        GAME_OVER_BUTTON_HEIGHT
+        ACTION_BUTTON_WIDTH,
+        ACTION_BUTTON_HEIGHT
     };
 
     drawButton("To Town", toTownRect,
@@ -489,10 +481,10 @@ void handleQuitInput(void)
 
         // Define quit button in virtual coordinates
         SDL_Rect quitRect = {
-            VIRTUAL_WIDTH - QUIT_BUTTON_VIRTUAL_WIDTH - 10,  // 10 pixels from right edge
+            VIRTUAL_WIDTH - ACTION_BUTTON_WIDTH - 10,  // 10 pixels from right edge
             10,                                              // 10 pixels from top
-            QUIT_BUTTON_VIRTUAL_WIDTH,
-            QUIT_BUTTON_VIRTUAL_HEIGHT
+            ACTION_BUTTON_WIDTH,
+            ACTION_BUTTON_HEIGHT
         };
 
         if (isMouseOverButton(virtualMouseX, virtualMouseY, quitRect))
