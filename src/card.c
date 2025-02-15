@@ -82,12 +82,11 @@ void drawCardContent(Card *card, SDL_Rect cardRect) {
         SDL_Rect spriteClip;
         const Texture *cardTexture = card->texture;
 
-        static Uint32 lastFrameTime = 0;
         Uint32 currentTime = SDL_GetTicks();
 
-        if (currentTime - lastFrameTime > FRAME_DELAY && cardTexture->frameCount > 1) {
+        if (currentTime - card->lastFrameTime > FRAME_DELAY && cardTexture->frameCount > 1) {
             card->texture->currentFrame = (card->texture->currentFrame + 1) % cardTexture->frameCount;
-            lastFrameTime = currentTime;
+            card->lastFrameTime = currentTime;
         }
 
         if (cardTexture->alignment) {
@@ -136,7 +135,8 @@ Card *createEmptyCard(void)
         .value = {0, 0.0f},
         .id = NULL,
         .customData = NULL,
-        .texture = NULL};
+        .texture = NULL,
+        .lastFrameTime = SDL_GetTicks()};
 
     return card;
 }
@@ -148,6 +148,7 @@ Card *createCard(CardType type, CardRarity rarity)
 
     card->type = type;
     card->rarity = rarity;
+    card->lastFrameTime = SDL_GetTicks();
 
     // Generate rarity-based ranges
     float damageMin = RARITY_RANGES[card->rarity].damageMin;

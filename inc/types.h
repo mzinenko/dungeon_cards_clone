@@ -161,6 +161,8 @@ typedef struct Card
 
     void *customData; // Pointer for additional, context-specific data
     Texture *texture; // Texture for rendering
+
+    Uint32 lastFrameTime;
 } Card;
 
 // Animated card struct
@@ -299,7 +301,8 @@ typedef struct
     char *name;
     int relationship; // 0-100
     FactionType type; // Add this
-    Texture *texture;
+    SDL_Texture *banner;
+    SDL_Rect bannerRect;
     bool isHovered; // Add this for hover effects
 } Banner;
 
