@@ -62,8 +62,10 @@ void enemyInteraction(int enemyX, int enemyY) {
     };
 
 
-    if (!isShooting)
+    if (!isShooting) {
+        playSound("resource/music/shoot1.wav");
         shootProjectile(startX, startY, targetX, targetY, 1000);
+    }
 
     
     Card *enemyCard = &grid->cells[enemyY][enemyX];

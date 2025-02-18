@@ -76,25 +76,11 @@ void initHubInterface(void) {
         HUB_PLAYER_PHOTO_SIZE
     };
 
-    hubInterface->statsRect = (SDL_Rect){
-        HUB_PANEL_PADDING,
-        HUB_PANEL_PADDING * 2 + HUB_PLAYER_PHOTO_SIZE,
-        HUB_PLAYER_PHOTO_SIZE + HUB_PANEL_PADDING * 2,
-        HUB_STATS_HEIGHT
-    };
-
-    hubInterface->godsRect = (SDL_Rect){
-        (VIRTUAL_WIDTH - 200) / 2,
-        HUB_PANEL_PADDING,
-        200,
-        40
-    };
-
     hubInterface->resourceRect = (SDL_Rect){
-        VIRTUAL_WIDTH - 150 - HUB_PANEL_PADDING,
+        hubInterface->playerPhotoRect.x + hubInterface->playerPhotoRect.w + HUB_PANEL_PADDING * 2,
         HUB_PANEL_PADDING,
-        150,
-        100
+        HUB_PLAYER_PHOTO_SIZE * 1.5f,
+        HUB_PLAYER_PHOTO_SIZE
     };
 
     hubInterface->quitButton = (SDL_Rect){
@@ -111,9 +97,8 @@ void initHubInterface(void) {
         ACTION_BUTTON_HEIGHT
     };
 
-    int bannersTotalWidth = 2 * HUB_BANNER_WIDTH + HUB_BANNER_SPACING;
-    int bannersStartX = (VIRTUAL_WIDTH - bannersTotalWidth) / 2 + HUB_PLAYER_PHOTO_SIZE / 2; 
-    int bannersY = (VIRTUAL_HEIGHT - HUB_BANNER_HEIGHT) / 2;
+    int bannersStartX = hubInterface->playerPhotoRect.x + hubInterface->playerPhotoRect.w + HUB_PANEL_PADDING * 2; 
+    int bannersY = (VIRTUAL_HEIGHT - HUB_BANNER_HEIGHT) / 2 + HUB_PANEL_PADDING * 2;
 
 
     for (int i = 0; i < 2; i++) {
@@ -184,19 +169,24 @@ void drawHubInterface(void) {
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderFillRect(renderer, &hubInterface->statsRect);
 
-    SDL_Rect frameRect = {
+    SDL_Rect playerFrameRect = {
         hubInterface->playerPhotoRect.x - 5,
         hubInterface->playerPhotoRect.y - 5,
         hubInterface->playerPhotoRect.w + 10,
         hubInterface->playerPhotoRect.h + 10
     };
     
-    SDL_RenderCopy(renderer, heroTextures[2].texture, NULL, &frameRect);
+    SDL_RenderCopy(renderer, heroTextures[2].texture, NULL, &playerFrameRect);
     SDL_RenderCopy(renderer, heroTextures[1].texture, NULL, &hubInterface->playerPhotoRect);
 
-    SDL_RenderFillRect(renderer, &hubInterface->godsRect);
+    SDL_Rect resourceFrameRect = {
+        hubInterface->resourceRect.x - 5,
+        hubInterface->resourceRect.y - 5,
+        hubInterface->resourceRect.w + 10,
+        hubInterface->resourceRect.h + 10
+    };
 
-    SDL_RenderFillRect(renderer, &hubInterface->resourceRect);
+    SDL_RenderCopy(renderer, heroTextures[2].texture, NULL, &resourceFrameRect);
 
     SDL_Color textColor = {255, 255, 255, 255};
     char resourceText[32];
@@ -204,7 +194,7 @@ void drawHubInterface(void) {
     
     snprintf(resourceText, sizeof(resourceText), "Gold: %d", progress->totalCoins);
     renderText(resourceText, 
-        hubInterface->resourceRect.x + HUB_PANEL_PADDING,
+        hubInterface->resourceRect.x + HUB_PANEL_PADDING * 1.5,
         resourceY,
         textColor
     );
@@ -214,7 +204,7 @@ void drawHubInterface(void) {
         const char* gemTypes[] = {"Common", "Uncommon", "Rare", "Epic", "Legendary"};
         snprintf(resourceText, sizeof(resourceText), "%s: %d", gemTypes[i], progress->gems[i]);
         renderText(resourceText,
-            hubInterface->resourceRect.x + HUB_PANEL_PADDING,
+            hubInterface->resourceRect.x + HUB_PANEL_PADDING * 1.5,
             resourceY,
             textColor
         );
@@ -541,7 +531,7 @@ void initSaveSelectUI(void) {
     saveSelectUI->saveButtons = malloc(sizeof(SaveFileButton) * count);
     saveSelectUI->saveButtonCount = count;
 
-    int listWidth = VIRTUAL_WIDTH * 0.6f;  
+    int listWidth = VIRTUAL_WIDTH * 0.7f;  
     int listStartX = (VIRTUAL_WIDTH - listWidth) / 2;
     int listStartY = 40;
 

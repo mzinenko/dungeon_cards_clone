@@ -367,6 +367,8 @@ void handleFactionInput(void) {
 
 void handleUpgradePurchase(Faction* faction, int upgradeIndex) {
     if (purchaseUpgrade(faction, upgradeIndex)) {
+        playSound("resource/music/purchase.wav");
+        
         if (faction->type == FACTION_VANGUARD) {            
             int existingIndex = -1;
             for (int i = 0; i < progress->vanguardUpgrades.count; i++) {
